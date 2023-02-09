@@ -23,8 +23,8 @@ def detailMinyak(request,username):
 @api_view(["POST"])
 def addMinyak(request):
     minyak = Minyak.objects.create(
-        user = request.POST["user"],
-        volume = request.POST["volume"]
+        user = request.data["user"],
+        volume = request.data["volume"]
     )
     try:
         Poin.objects.create(
