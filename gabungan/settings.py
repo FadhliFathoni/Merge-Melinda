@@ -83,12 +83,8 @@ WSGI_APPLICATION = 'gabungan.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'CLIENT':{
-            "host":"mongodb+srv://admin:qwer@atlascluster.nealt2r.mongodb.net/?retryWrites=true&w=majority",
-            "name":"Melinda",
-            # "authMechanism":"SCRAM-SHA-1"
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
