@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg',
     'Account',
     'API.Mesin',
     'API.Minyak',
@@ -44,7 +45,6 @@ INSTALLED_APPS = [
     'API.Transaction',
     'API.ManagementUser',
     'rest_framework',
-    'drf_yasg',
     'corsheaders',  
 ]
 
