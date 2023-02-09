@@ -9,7 +9,12 @@ from rest_framework.response import Response
 from Account.models import Account
 
 class UserPagination(PageNumberPagination):
-    page_size = 10
+    page_size = 5
+    def get_page_size(self, request):
+        if "limit" in request.GET:
+            self.page_size = request.GET["limit"]
+        return super().get_page_size(request)
+
 
 class ListUser(ListAPIView):
     queryset = Account.objects.all()
@@ -17,6 +22,8 @@ class ListUser(ListAPIView):
     filter_backends = [OrderingFilter, SearchFilter]
     search_fields = ("username","email","date__joined")
     pagination_class = UserPagination
+
+        
 
 @api_view(["DELETE"])
 def deleteUser(request,delete_id):
