@@ -21,6 +21,7 @@ class AccountManager(BaseUserManager):
         user.is_adminDesa = True
         user.is_user = True
         user.is_superAdmin = True
+        user.is_staff= True
 
         user.poin = None
 
@@ -45,6 +46,7 @@ class Account(AbstractBaseUser):
     is_adminDesa = models.BooleanField(default=False)  # Admin Desa
     is_user = models.BooleanField(default=True)  # User
     is_superAdmin = models.BooleanField(default=False)  # Super Admin
+    is_staff = models.BooleanField(default=True)  # Super Admin
 
     is_active = models.BooleanField(default=True)
     last_login = models.DateTimeField(verbose_name='last login', auto_now=True)
@@ -57,8 +59,8 @@ class Account(AbstractBaseUser):
     def __str__(self):
         return self.email
 
-    # def has_perm(self, perm, obj=None):
-    #     return self.is_adminDesa
+    def has_perm(self, perm, obj=None):
+        return self.is_adminDesa
 
-    # def has_module_perms(self, app_label):
-    #     return True
+    def has_module_perms(self, app_label):
+        return True

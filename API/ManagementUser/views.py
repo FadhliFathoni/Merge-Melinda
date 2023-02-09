@@ -6,12 +6,13 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from Account.models import Account
 
 class UserPagination(PageNumberPagination):
     page_size = 10
 
 class ListUser(ListAPIView):
-    queryset = User.objects.all()
+    queryset = Account.objects.all()
     serializer_class = UserSerializer
     filter_backends = [OrderingFilter, SearchFilter]
     search_fields = ("username","email","date__joined")
