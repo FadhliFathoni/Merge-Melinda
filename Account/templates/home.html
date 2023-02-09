@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="eng">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Boostrap</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+    </head>
+    <body>
+        <h1>Contoh</h1>
+        
+        {% if request.user.is_authenticated %}
+        <p>You are logged in</p>
+        <p>Name : {{ request.user.name }}</p>
+
+        <a href={% url 'logout_user' %} type="button">Logged Out</a>
+        {% else %}
+        <p>User is not logged in</p>
+        <a href={% url 'register' %} type="button">Register</a>
+        {% endif %}
+    </body>
+</html>
