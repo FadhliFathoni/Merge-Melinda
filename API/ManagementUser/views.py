@@ -15,20 +15,14 @@ class UserPagination(PageNumberPagination):
         if "limit" in request.GET:
             self.page_size = request.GET["limit"]
         return super().get_page_size(request)
-            
-
 
 class ListUser(ListAPIView):
     queryset = Account.objects.all()
     serializer_class = UserSerializer
     filter_backends = [OrderingFilter, SearchFilter]
-    search_fields = ("username","email","date__joined")
+    search_fields = ("name","email")
     pagination_class = UserPagination
-    
-
-
-
-        
+    ordering = ["-createdAt"]
 
 @api_view(["DELETE"])
 def deleteUser(request,delete_id):
