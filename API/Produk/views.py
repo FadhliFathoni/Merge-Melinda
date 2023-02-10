@@ -25,7 +25,6 @@ import random
 # API UNTUK BANYAK PRODUK 
 @api_view(['GET', 'POST'])
 def produkMany(req):
-    
     try: 
         if req.method == 'GET':
             q = req.GET.get('q', None)
