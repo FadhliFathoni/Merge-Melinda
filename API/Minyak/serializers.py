@@ -1,4 +1,4 @@
-from .models import Minyak, Poin
+from .models import Minyak
 from rest_framework import serializers
 
 class MinyakSerializers(serializers.ModelSerializer):
@@ -8,5 +8,5 @@ class MinyakSerializers(serializers.ModelSerializer):
 
 class PoinSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Poin
-        fields = "__all__"
+        model = Minyak
+        fields = ["id","user","id_user","email","phone", "volume","poin","status"]

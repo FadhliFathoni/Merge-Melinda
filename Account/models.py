@@ -31,7 +31,7 @@ class AccountManager(BaseUserManager):
 
 
 class Account(AbstractBaseUser):
-    name = models.TextField(blank=True, max_length=32)
+    name = models.TextField(blank=True, max_length=32,unique=True)
     email = models.EmailField(verbose_name="email", max_length=32, unique=True)
     phone = models.TextField(max_length=16)
     alamat = models.TextField(max_length=128)

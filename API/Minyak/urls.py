@@ -2,9 +2,10 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('',views.listMinyak),
+    path('',views.ListMinyak.as_view()),
+    path('setor/',views.Setoran.as_view()),
+    path('setor/<int:id>/verifikasi/',views.Verifikasi),
+    path('verifikasi/',views.Verifikasi),
     path('add/',views.addMinyak),
-    path('poin/',views.poinView),
-    path('<str:username>',views.detailMinyak),
-    path('<str:username>/poin',views.detailPoin),
+    path('poin/',views.ListPoin.as_view()),
 ]
