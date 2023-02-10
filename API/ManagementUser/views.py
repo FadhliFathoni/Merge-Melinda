@@ -27,5 +27,5 @@ class ListUser(ListAPIView):
 
 @api_view(["DELETE"])
 def deleteUser(request,delete_id):
-    User.objects.filter(id = delete_id).delete()
+    Account.objects.filter(id = delete_id).first().delete()
     return redirect("/user/")
