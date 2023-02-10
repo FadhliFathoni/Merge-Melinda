@@ -7,7 +7,7 @@ from rest_framework import permissions
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Roomrent API Documentation",
+        title="API Minyak Documentation",
         default_version='v1',
         description="Documentation",
     ),
