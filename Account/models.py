@@ -46,7 +46,7 @@ class Account(AbstractBaseUser):
     is_adminDesa = models.BooleanField(default=False)  # Admin Desa
     is_user = models.BooleanField(default=True)  # User
     is_superAdmin = models.BooleanField(default=False)  # Super Admin
-    is_staff = models.BooleanField(default=True)  # Super Admin
+    is_staff = models.BooleanField(default=False)  # Super Admin
 
     is_active = models.BooleanField(default=True)
     last_login = models.DateTimeField(verbose_name='last login', auto_now=True)
