@@ -16,6 +16,7 @@ class MinyakPagination(PageNumberPagination):
 class ListMinyak(ListAPIView):
     queryset = Minyak.objects.filter(status = "Terverifikasi")
     serializer_class = MinyakSerializers
+    pagination_class = MinyakPagination
     filter_backends = [OrderingFilter,SearchFilter]
     search_fields = ("user","email")
     ordering = ["-created"]
@@ -29,7 +30,6 @@ def addMinyak(request):
             id_user = user.id,
             email = user.email,
             phone = user.phone,
-            volume = request.data["volume"],
         )
     except:
         return Response("Username tidak tersedia")
@@ -37,6 +37,7 @@ def addMinyak(request):
 class ListPoin(ListAPIView):
     queryset = Minyak.objects.filter(status = "Terverifikasi")
     serializer_class = PoinSerializer
+    pagination_class = MinyakPagination
     filter_backends = [OrderingFilter,SearchFilter]
     search_fields = ("user","email")
     ordering = ["-created"]
@@ -44,6 +45,7 @@ class ListPoin(ListAPIView):
 class Setoran(ListAPIView):
     queryset = Minyak.objects.filter(status = "Menunggu Verifikasi")
     serializer_class = MinyakSerializers
+    pagination_class = MinyakPagination
     filter_backends = [OrderingFilter,SearchFilter]
     search_fields = ("user","email")
     ordering = ["-created"]
