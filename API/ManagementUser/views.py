@@ -1,5 +1,5 @@
 from django.shortcuts import redirect
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, DestroyAPIView
 from django.contrib.auth.models import User
 from .serializers import UserSerializer
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -24,6 +24,10 @@ class ListUser(ListAPIView):
     pagination_class = UserPagination
     ordering = ["-createdAt"]
 
-@api_view(["DELETE"])
-def deleteUser(request,delete_id):
-    Account.objects.filter(id = delete_id).first().delete()
+# @api_view(["DELETE"])
+# def deleteUser(request,delete_id):
+#     Account.objects.filter(id = delete_id).first().delete()
+
+class deleteUser(DestroyAPIView):
+    queryset = Account.objects.all()
+    serializer_class = UserSerializer
