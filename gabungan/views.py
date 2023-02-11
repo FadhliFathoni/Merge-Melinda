@@ -9,8 +9,9 @@ def loginView(request):
     if request.method == "POST":
         email = request.data["email"]
         password = request.data["password"]
+        data = Account.objects.get(email = email)
         akun = authenticate(email = email, password = password)
         if akun is not None:
             login(request, akun)
-            return Response(f"Berhasil Login {request.user}")
+            return Response(data.id)
     return Response("Login")

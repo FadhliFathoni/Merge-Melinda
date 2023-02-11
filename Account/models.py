@@ -23,7 +23,7 @@ class AccountManager(BaseUserManager):
         user.is_superAdmin = True
         user.is_staff= True
 
-        # user.poin = None
+        user.poin = None
 
         user.set_password(password)
         user.save(using=self.db)
@@ -35,7 +35,7 @@ class Account(AbstractBaseUser):
     email = models.EmailField(verbose_name="email", max_length=32, unique=True)
     phone = models.TextField(max_length=16)
     alamat = models.TextField(max_length=128)
-    # poin = models.IntegerField(default=0)
+    poin = models.IntegerField(default=0)
     foto = models.TextField(max_length=128)
 
     createdAt = models.DateTimeField(

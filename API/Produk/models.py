@@ -6,13 +6,11 @@ class Kategori(models.Model):
     _id = models.ObjectIdField()
     nama = models.CharField(max_length=64)
 
-    created = models.DateField(auto_now_add=True)
-    updated = models.DateField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.nama
-
-
 
 class Penukaran(models.Model):
     _id = models.ObjectIdField()
@@ -24,27 +22,29 @@ class Penukaran(models.Model):
 
     # class Meta:
     #     abstract = True
-    
+
+
+def uploadTo(instance, filename):
+    return 'images/{filename}'.format(filename=filename)
+
 class Produk(models.Model):
     _id = models.ObjectIdField()
     nama = models.CharField(max_length=64)
     stok = models.IntegerField()
     keterangan = models.CharField(max_length=128)
     id_mesin = models.CharField(max_length=128)
-    gambar = models.CharField(max_length=128)
+    gambar = models.ImageField(upload_to=uploadTo, blank=True, null=True)
     harga = models.IntegerField()
     kategori = models.CharField(max_length=200, default="")
     penukaran = models.ArrayField(
         model_container = Penukaran,
-        default=[]
+        default=[],
+        blank=True,
+        null=True
     )
     
     created = models.DateField(auto_now_add=True)
     updated = models.DateField(auto_now=True)
 
-    # class Meta: 
-    #     indexes = [
-    #         indexes.Index. (fields=['nama', 'keterangan'])
-    #     ]
     def __str__(self):
         return self.nama

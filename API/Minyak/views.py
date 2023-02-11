@@ -58,7 +58,7 @@ def Verifikasi(request, id):
     if "volume" in request.data:
         data.update(
             volume = request.data["volume"],
-            poin = int(request.data["volume"] / 500),
+            poin = int(request.data["volume"]) / 500,
             status = "Terverifikasi"
         )
         serializer = MinyakSerializers(data=data)
