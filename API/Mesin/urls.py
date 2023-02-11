@@ -3,6 +3,6 @@ from . import views
 
 urlpatterns = [
     path('0', views.mesinMany),
-    path('0/<str:identifier>', views.mesinOne),
+    path('0/<str:pk>', views.mesinOne),
     path('scan', views.scanMesin),
 ]

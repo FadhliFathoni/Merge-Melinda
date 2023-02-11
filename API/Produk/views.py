@@ -62,31 +62,34 @@ class OneProduk(
 
     serializer_class = ProdukSerializers
     queryset = Produk.objects.all()
-
+    
     def get(self, request, pk, *args, **kwargs):
-        try: 
-            queryset = Produk.objects.get(pk=ObjectId(pk))
-            serializer = self.serializer_class(queryset)
-
-            produkData = serializer.data
-            produkData['penukaran'] = json.loads(serializer.data['penukaran'].replace('\'','\"'))
-        
-            return Response({'result': produkData})
+        try:         
+            self.kwargs['pk'] = ObjectId(self.kwargs['pk'])
+            return self.retrieve(request, *args, **kwargs)
 
         except (InvalidId, ObjectDoesNotExist) :
-            return Response({
-                'message': 'Not found!',
-                'result': False
-            }, status = status.HTTP_404_NOT_FOUND)     
+            return Response({'message': 'Not found!','result': False}, status = status.HTTP_404_NOT_FOUND)     
 
     def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+        try: 
+            self.kwargs['pk'] = ObjectId(self.kwargs['pk'])
+            return self.partial_update(request, *args, **kwargs)
 
-    def patch(self, request, *args, **kwargs):
-        return self.partial_update(request, *args, **kwargs)
+        except (InvalidId, ObjectDoesNotExist) :
+            return Response({'message': 'Not found!','result': False}, status = status.HTTP_404_NOT_FOUND)     
 
     def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)
+        try: 
+            self.kwargs['pk'] = ObjectId(self.kwargs['pk'])
+            self.destroy(request, *args, **kwargs)
+
+            return Response({
+                'message': 'Deleted successfully',
+            }, status = status.HTTP_204_NO_CONTENT) 
+
+        except (InvalidId, ObjectDoesNotExist) :
+            return Response({'message': 'Not found!','result': False}, status = status.HTTP_404_NOT_FOUND)     
 
 # KATEGORI
 class ManyKategori(
@@ -96,14 +99,15 @@ class ManyKategori(
 ):
     serializer_class = KategoriSerializers
     queryset = Kategori.objects.all()
-    filter_backends = [SearchFilter]
+    filter_backends = [OrderingFilter, SearchFilter]
     search_fields = ['nama']
+    ordering_fields = ['created']
 
     def get(self, request):
         queryset = self.get_queryset()
         
         paginator = PageNumberPagination()
-        paginator.page_size = 1
+        paginator.page_size = 20
 
         for backend in list(self.filter_backends):
             queryset = backend().filter_queryset(self.request, queryset, self)
@@ -129,9 +133,9 @@ class OneKategori(
 
     serializer_class = KategoriSerializers
     queryset = Kategori.objects.all()
-
+    
     def get(self, request, pk, *args, **kwargs):
-        try: 
+        try:         
             self.kwargs['pk'] = ObjectId(self.kwargs['pk'])
             return self.retrieve(request, *args, **kwargs)
 

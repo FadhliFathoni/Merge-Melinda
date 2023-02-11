@@ -6,8 +6,8 @@ class Kategori(models.Model):
     _id = models.ObjectIdField()
     nama = models.CharField(max_length=64)
 
-    created = models.DateField(auto_now_add=True)
-    updated = models.DateField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.nama
