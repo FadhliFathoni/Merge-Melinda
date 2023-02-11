@@ -11,6 +11,8 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 class MinyakPagination(PageNumberPagination):
     page_size = 5
     def get_page_size(self, request):
+        if "limit" in request.GET:
+            self.page_size = request.GET["limit"]
         return super().get_page_size(request)
 
 class ListMinyak(ListAPIView):
