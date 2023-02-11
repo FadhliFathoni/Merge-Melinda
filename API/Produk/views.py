@@ -16,6 +16,8 @@ from bson.objectid import ObjectId
 from bson.errors import InvalidId
 
 from .models import Produk, Kategori
+from Account.models import Account
+from API.ManagementUser.serializers import UserSerializer
 from .serializers import ProdukSerializers, KategoriSerializers, PenukaranSerializer
 
 import sys
@@ -170,105 +172,6 @@ class OneKategori(
         except (InvalidId, ObjectDoesNotExist) :
             return Response({'message': 'Not found!','result': False}, status = status.HTTP_404_NOT_FOUND)     
 
-# API UNTUK BANYAK PRODUK 
-@api_view(['POST'])
-def createProduk(req):
-    try: 
-        data = JSONParser().parse(req)
-        
-        data["kategori"] = ','.join(data["kategori"])
-
-        produkBaru = ProdukSerializers(data=data)
-
-        # cek validasi lalu simpan 
-        if produkBaru.is_valid():
-            produkBaru.save()
-
-            return JsonResponse({
-                'pesan': 'Produk baru berhasil ditambahkan',
-            }, status = status.HTTP_200_OK)
-        
-        # data yg dikirimkan invalid 
-        print(produkBaru.errors)
-            
-        return JsonResponse({
-            'pesan': 'Cek kembali data yang anda masukkan!',
-        }, status = status.HTTP_400_BAD_REQUEST)
-            
-    except:
-        print(sys.exc_info())
-        
-        return JsonResponse({
-            'pesan': 'Internal server bermasalah',
-            'data': []
-        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-# API UNTUK SATU KATEGORI 
-@api_view(['GET', 'PUT', 'DELETE'])    
-def produkOne(req, identifier):
-    
-    try:
-        # ambil dulu satu produk
-        data = Produk.objects.get(pk=ObjectId(identifier))
-
-        # dapatkan produk
-        if req.method == 'GET':
-            produk = ProdukSerializers(data)
-
-            produkData = produk.data
-            produkData['penukaran'] = json.loads(produk.data['penukaran'].replace('\'','\"'))
-
-            return JsonResponse({
-                'pesan': f'Produk ditemukan',
-                'data': produkData,
-            }, status = status.HTTP_200_OK)
-        
-        # edit produk 
-        elif req.method == 'PUT':
-            dataBaru = JSONParser().parse(req)
-            
-            if 'kategori' in dataBaru:
-                dataBaru["kategori"] = ','.join(dataBaru["kategori"])
-            
-            produkBaru = ProdukSerializers(data, data=dataBaru, partial=True)
-
-            # cek validasi data 
-            if produkBaru.is_valid():
-                produkBaru.save()
-
-                return JsonResponse({
-                    'pesan': 'Produk berhasil diperbaharui',
-                }, status = status.HTTP_200_OK)
-            
-            # data yg dikirimkan invalid 
-            print(produkBaru.errors)
-                
-            return JsonResponse({
-                'pesan': 'Cek kembali data yang anda masukkan!',
-            }, status = status.HTTP_400_BAD_REQUEST)
-                
-        # hapus produk
-        elif req.method == 'DELETE':
-            data.delete()
-
-            return JsonResponse({
-                'pesan': 'Produk berhasil di hapus!'
-            })
-          
-    except (InvalidId, ObjectDoesNotExist) :
-        return JsonResponse({
-            'pesan': 'Produk tidak ditemukan!',
-            'data': []
-        }, status = status.HTTP_404_NOT_FOUND)     
-
-    except:
-        # jika sistem error 
-        print(sys.exc_info())
-        return JsonResponse({
-            'pesan': 'Internal server bermasalah',
-            'data': []
-        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 # API UNTUK REDEEM 
 @api_view(['POST', 'PUT'])
 def tukarPoin(req):
@@ -278,92 +181,99 @@ def tukarPoin(req):
         produkData = ProdukSerializers(produk).data
         
         if req.method == 'POST':
-            userDB = connect('default').get_database('melinda').get_collection('pengguna') 
+            # userDB = connect('default').get_database('melinda').get_collection('Account_account') 
+            user = Account.objects.get(id=pesanan['id_pengguna'])
+            userData = UserSerializer(user).data
 
             biaya = produkData['harga'] * pesanan['jumlah']
-            
-            produkBaru = produkData
-            
-            penukaranBaru = json.loads(produkBaru['penukaran'].replace('\'','\"'))
-            kodeBaru = str("".join(random.choice(string.ascii_letters + string.digits ) for x in range(7)))
 
-            penukaranBaru[0]['_id'] = ObjectId()
+            if userData['poin'] < biaya:
+                return Response({
+                    'message': f'Your points are not enough',
+                }, status = status.HTTP_406_NOT_ACCEPTABLE)
+
+            penukaranBaru = produkData['penukaran']
+            kodeBaru = str("".join(random.choice(string.ascii_letters + string.digits ) for x in range(7)))
             
             penukaranBaru.append({
-                '_id': ObjectId(),
-                'id_pengguna': ObjectId(pesanan['id_pengguna']),
+                # '_id': ObjectId(),
+                'id_pengguna': pesanan['id_pengguna'],
                 'kode': kodeBaru,
                 'jumlah': pesanan['jumlah'],
                 'tanggal': datetime.datetime.now(),
                 'selesai':  False
             })
+                      
+            updateProduk = ProdukSerializers(produk, data={
+                    'penukaran': penukaranBaru,
+                    'stok': produkData['stok'] - pesanan['jumlah']
+                }, partial=True)
+            updateUser = UserSerializer(user, data={'poin': userData['poin'] - biaya}, partial=True)
+            msg = 'failure'
+            statuss = status.HTTP_404_NOT_FOUND
             
-            # perbaharui stok dan daftar penukaran 
-            produkBaru['penukaran'] = penukaranBaru
-            produkBaru['stok'] = produkBaru['stok'] - pesanan['jumlah']
-
-            updateProduk = ProdukSerializers(produk, data=produkBaru)
-
+            
             # cek validasi data 
-            if updateProduk.is_valid():
+            if updateProduk.is_valid() and updateUser.is_valid():
                 updateProduk.save()
+                updateUser.save()
+                
+                msg = 'successfully'
+                statuss = status.HTTP_200_OK 
 
-                print("stok dan penukaran berhasil diperbaharui")
+            return Response({
+                'message': f'Redeem product {msg}',
+            }, status = statuss) 
             
-            else:
-                # data yg dikirimkan invalid 
-                print(updateProduk.errors)
-                return JsonResponse({
-                    'pesan': 'Penukaran gagal!'
-                }, status = status.HTTP_503_SERVICE_UNAVAILABLE)
-
-            user = userDB.find_one_and_update({'_id': ObjectId(pesanan['id_pengguna'])}, { '$inc': {'poin': -biaya}})        
-
-            return JsonResponse({
-                'pesan': 'Penukaran berhasil!'
-            }, status = status.HTTP_200_OK)
-
         elif req.method == 'PUT':
-            produknya = produkData
+            # produknya = produkData
             
-            penukarannya = json.loads(produknya['penukaran'].replace('\'','\"'))
+            # penukarannya = json.loads(produknya['penukaran'].replace('\'','\"'))
+            penukarannya = produkData['penukaran']
             findPenukaran = list(filter(lambda item: item['kode'] == pesanan['kode'], penukarannya))
 
             if len(findPenukaran) == 0:
-                return JsonResponse({
-                    'pesan': 'Kode penukaran tidak ditemukan!'  
-                }, status = status.HTTP_404_NOT_FOUND)
-
+                raise ObjectDoesNotExist()
+                
             indexPenukaran = penukarannya.index(findPenukaran[0])
 
+            # penukarannya[indexPenukaran]['_id'] = ObjectId()
             penukarannya[indexPenukaran]['selesai'] = pesanan['selesai']
-            produknya['penukaran'] = penukarannya
+            
+            # produknya['penukaran'] = penukarannya
 
-            updateProduk = ProdukSerializers(produk, data=produknya, partial=True)
+            print(penukarannya)
+            updateProduk = ProdukSerializers(produk, data={
+                'penukaran': penukarannya
+                }, partial=True)
+            msg = 'failure'
+            statuss = status.HTTP_404_NOT_FOUND
 
+            
             if updateProduk.is_valid():
                 
                 updateProduk.save()
-                
-                return JsonResponse({
-                    'pesan': 'Status penukaran berhasil diperbaharui'
-                }, status = status.HTTP_200_OK)  
-                
+
+                msg = 'successfully'
+                statuss = status.HTTP_200_OK 
+
+            return Response({
+                'message': f'Redeem verification {msg}',
+            }, status = statuss)  
+
             return JsonResponse({
                 'pesan': 'Cek kembali data yang anda masukkan!',
             }, status = status.HTTP_400_BAD_REQUEST)  
             
-    except InvalidId:
-        return JsonResponse({
-            'pesan': 'Produk atau pengguna tidak ditemukan!',
-            'data': []
-        }, status = status.HTTP_404_NOT_FOUND)     
-
+    except (InvalidId, ObjectDoesNotExist):
+        return Response({
+            'message': 'Not found!',
+        }, status = status.HTTP_404_NOT_FOUND)
+    
     except:
+        # jika sistem error 
         print(sys.exc_info())
-        
-        return JsonResponse({
-            'pesan': 'Internal server bermasalah',
-            'data': []
+
+        return Response({
+            'message': 'Internal server ERROR',
         }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-      
