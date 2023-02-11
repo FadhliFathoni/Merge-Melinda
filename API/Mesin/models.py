@@ -9,8 +9,8 @@ class Mesin(models.Model):
     origin = models.TextField(max_length=128, unique=True)
     id_pengguna_aktif = models.CharField(max_length=128, blank=True, default='')
 
-    created = models.DateField(auto_now_add=True)
-    updated = models.DateField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.nama

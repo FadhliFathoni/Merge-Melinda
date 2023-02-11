@@ -12,17 +12,6 @@ class Kategori(models.Model):
     def __str__(self):
         return self.nama
 
-class Penukaran(models.Model):
-    _id = models.ObjectIdField()
-    id_pengguna = models.CharField(max_length=128)
-    kode = models.CharField(max_length=16, default='xxx') # baru
-    jumlah = models.IntegerField()
-    tanggal = models.DateField()
-    selesai = models.BooleanField(default=False) # barau
-
-    # class Meta:
-    #     abstract = True
-
 
 def uploadTo(instance, filename):
     return 'images/{filename}'.format(filename=filename)
@@ -36,15 +25,25 @@ class Produk(models.Model):
     gambar = models.ImageField(upload_to=uploadTo, blank=True, null=True)
     harga = models.IntegerField()
     kategori = models.CharField(max_length=200, default="")
-    penukaran = models.ArrayField(
-        model_container = Penukaran,
-        default=[],
-        blank=True,
-        null=True
-    )
     
-    created = models.DateField(auto_now_add=True)
-    updated = models.DateField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.nama
+
+class Penukaran(models.Model):
+    _id = models.ObjectIdField()
+    nama = models.CharField(max_length=128)
+    kode = models.CharField(max_length=16, default='xxx') # baru
+    email = models.CharField(max_length=128)
+    phone = models.CharField(max_length=128)
+    produk = models.CharField(max_length=128)
+    jumlah = models.IntegerField()
+    tanggal = models.DateTimeField()
+    selesai = models.BooleanField(default=False) # barau
+
+    def __str__(self):
+        return self.nama
+    # class Meta:
+    #     abstract = True
