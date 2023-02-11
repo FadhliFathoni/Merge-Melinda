@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from djongo.database import connect
 
-from rest_framework.parsers import JSONParser
+from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework import status, mixins, viewsets
 from rest_framework.decorators import api_view
@@ -35,6 +35,7 @@ class ManyProduk(
     queryset = Produk.objects.all()
     filter_backends = [SearchFilter]
     search_fields = ['nama', 'keterangan', 'kategori']
+    parser_classes = [MultiPartParser]
 
     def get(self, request):
         queryset = self.get_queryset()

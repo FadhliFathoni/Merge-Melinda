@@ -8,7 +8,7 @@ class PenukaranSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProdukSerializers(serializers.ModelSerializer):
-    penukaran = PenukaranSerializer(many=True)
+    penukaran = PenukaranSerializer(many=True, required=False)
     
     class Meta: 
         model = Produk
