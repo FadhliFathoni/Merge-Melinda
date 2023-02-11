@@ -11,5 +11,7 @@ urlpatterns = [
     path('kategori', views.ManyKategori.as_view()),
     path('kategori/<str:pk>', views.OneKategori.as_view()),
 
-    path('tukar', views.tukarPoin)
+    # PENUKARAN 
+    path('penukaran', views.ManyPenukaran.as_view()),
+    path('penukaran/<str:kode>', views.OnePenukaran)
 ]
