@@ -3,7 +3,6 @@ from . import views
 from bson.objectid import ObjectId
 
 urlpatterns = [
-    
     # PRODUK
     path('0', views.ManyProduk.as_view()),
     path('0/<str:pk>', views.OneProduk.as_view()),

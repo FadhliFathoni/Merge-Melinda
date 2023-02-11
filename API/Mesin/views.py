@@ -1,121 +1,101 @@
 from django.shortcuts import render
+from django.http.response import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
+
+from djongo.database import connect
 
 from rest_framework.parsers import JSONParser
-from django.http.response import JsonResponse
+from rest_framework.response import Response
+from rest_framework import status, mixins, viewsets
 from rest_framework.decorators import api_view
-from rest_framework import status
+from rest_framework.generics import GenericAPIView, ListAPIView, CreateAPIView, RetrieveAPIView
+from rest_framework.pagination import PageNumberPagination, InvalidPage
+from rest_framework.filters import OrderingFilter, SearchFilter
 
-from .models import Mesin
-from .serializers import MesinSerializers
-
-from django.core.exceptions import ObjectDoesNotExist
-from bson.objectid import ObjectId
+from bson.objectid import ObjectId 
 from bson.errors import InvalidId
 
+from .models import Mesin 
+from .serializers import MesinSerializers
+
 import sys
+import json
+import datetime
+from operator import itemgetter
+import string
+import random
 
-# API UNTUK BANYAK MESIN
-@api_view(['GET', 'POST'])
-def mesinMany(req):
-    try:
+# MESIN
+class ManyMesin(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    GenericAPIView
+):
+    serializer_class = MesinSerializers
+    queryset = Mesin.objects.all()
+    filter_backends = [OrderingFilter, SearchFilter]
+    search_fields = ['nama']
+    ordering_fields = ['created']
+
+    def get(self, request):
+        queryset = self.get_queryset()
         
-        # menampilkan semua daftar mesin 
-        if req.method == 'GET':
-            data = Mesin.objects.all()
-            mesin = MesinSerializers(data, many=True)
+        paginator = PageNumberPagination()
+        paginator.page_size = 20
 
-            return JsonResponse({
-                'pesan': f'{len(mesin.data)} mesin ditemukan!',
-                'data': mesin.data
-            }, status = status.HTTP_200_OK)
+        for backend in list(self.filter_backends):
+            queryset = backend().filter_queryset(self.request, queryset, self)
+        
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer_class = self.serializer_class(result_page, many=True)
 
-        # mendaftarkan mesin baru 
-        elif req.method == 'POST':
-            data = JSONParser().parse(req)
-            mesinBaru = MesinSerializers(data=data)
+        return paginator.get_paginated_response(serializer_class.data)
 
-            # cek validasi lalu simpan 
-            if mesinBaru.is_valid():
-                mesinBaru.save()
+    def post(self, request):
+        self.create(request)
+        
+        return Response({
+            'message': 'Added successfully',
+        }, status = status.HTTP_201_CREATED) 
 
-                return JsonResponse({
-                    'pesan': 'Mesin baru berhasil ditambahkan',
-                }, status = status.HTTP_200_OK)
-            
-            # data yg dikirimkan invalid 
-            print(mesinBaru.errors)
-                
-            return JsonResponse({
-                'pesan': 'Cek kembali data yang anda masukkan!',
-            }, status = status.HTTP_400_BAD_REQUEST)
+class OneMesin(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    GenericAPIView
+):
 
-    except:
-        print(sys.exc_info())        
-
-        return JsonResponse({
-            'pesan': 'Internal server bermasalah'
-        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-# API UNTUK SATU MESIN 
-@api_view(['GET', 'PUT', 'DELETE'])
-def mesinOne(req, identifier):
+    serializer_class = MesinSerializers
+    queryset = Mesin.objects.all()
     
-    try:
+    def get(self, request, pk, *args, **kwargs):
+        try:         
+            self.kwargs['pk'] = ObjectId(self.kwargs['pk'])
+            return self.retrieve(request, *args, **kwargs)
 
-        # ambil data satu mesin 
-        data = Mesin.objects.get(pk=ObjectId(identifier))
+        except (InvalidId, ObjectDoesNotExist) :
+            return Response({'message': 'Not found!','result': False}, status = status.HTTP_404_NOT_FOUND)     
 
-        # tampilkan data satu mesin 
-        if req.method == 'GET':
-            mesin = MesinSerializers(data)
+    def put(self, request, *args, **kwargs):
+        try: 
+            self.kwargs['pk'] = ObjectId(self.kwargs['pk'])
+            return self.partial_update(request, *args, **kwargs)
 
-            return JsonResponse({
-                'pesan': f'Mesin ditemukan',
-                'data': mesin.data
-            }, status = status.HTTP_200_OK)
+        except (InvalidId, ObjectDoesNotExist) :
+            return Response({'message': 'Not found!','result': False}, status = status.HTTP_404_NOT_FOUND)     
 
-        # edit data satu mesin 
-        elif req.method == 'PUT':
-            dataBaru = JSONParser().parse(req)
-            mesinBaru = MesinSerializers(data, data=dataBaru, partial=True)
+    def delete(self, request, *args, **kwargs):
+        try: 
+            self.kwargs['pk'] = ObjectId(self.kwargs['pk'])
+            self.destroy(request, *args, **kwargs)
 
-            # cek validasi data 
-            if mesinBaru.is_valid():
-                mesinBaru.save()
+            return Response({
+                'message': 'Deleted successfully',
+            }, status = status.HTTP_204_NO_CONTENT) 
 
-                return JsonResponse({
-                    'pesan': 'Mesin berhasil diperbaharui'
-                }, status = status.HTTP_200_OK)
-
-            # data tidak valid 
-            print(mesinBaru.errors)
-
-            return JsonResponse({
-                'pesan': 'Cek kembali data yang anda masukkan!',
-            }, status = status.HTTP_400_BAD_REQUEST)
-        
-        elif req.method == 'DELETE':
-            data.delete()
-
-            return JsonResponse({
-                'pesan': 'Mesin berhasil dihapus!'
-            }, status = status.HTTP_200_OK)
-        
-    except (InvalidId, ObjectDoesNotExist):
-        return JsonResponse({
-            'pesan': 'Mesin tidak ditemukan',
-            'data': {}
-        }, status = status.HTTP_404_NOT_FOUND)
-    
-    except:
-        # jika sistem error 
-        print(sys.exc_info())
-
-        return JsonResponse({
-            'pesan': 'Internal server bermasalah',
-            'data': []
-        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        except (InvalidId, ObjectDoesNotExist) :
+            return Response({'message': 'Not found!','result': False}, status = status.HTTP_404_NOT_FOUND)     
+   
 # API UNTUK SCAN QR 
 @api_view(['PUT'])
 def scanMesin(req):
@@ -125,38 +105,30 @@ def scanMesin(req):
 
         data = Mesin.objects.get(pk=ObjectId(body['id_mesin']))
 
-        if body['id_pengguna'] != '' :
-            tesUserId = ObjectId(body['id_pengguna'])
-
         mesinBaru = MesinSerializers(data, data={'id_pengguna_aktif': body['id_pengguna']}, partial=True)
-
+        msg = 'failure'
+        statuss = status.HTTP_404_NOT_FOUND
+        
         # cek validasi data 
         if mesinBaru.is_valid():
             mesinBaru.save()
+            msg = 'successfully'
+            statuss = status.HTTP_200_OK 
 
-            return JsonResponse({
-                'pesan': 'Scan mesin berhasil'
-            }, status = status.HTTP_200_OK)
-
-        # data tidak valid 
-        print(mesinBaru.errors)
-
-        return JsonResponse({
-            'pesan': 'Cek kembali data yang anda masukkan!',
-        }, status = status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'message': f'Scan {msg}',
+        }, status = statuss) 
 
     except (InvalidId, ObjectDoesNotExist):
-        return JsonResponse({
-            'pesan': 'id mesin atau pengguna tidak valid',
-            'data': {}
+        return Response({
+            'message': 'Not found!',
         }, status = status.HTTP_404_NOT_FOUND)
     
     except:
         # jika sistem error 
         print(sys.exc_info())
 
-        return JsonResponse({
-            'pesan': 'Internal server bermasalah',
-            'data': []
+        return Response({
+            'message': 'Internal server ERROR',
         }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 

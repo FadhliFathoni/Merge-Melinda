@@ -48,11 +48,18 @@ class ManyProduk(
         result_page = paginator.paginate_queryset(queryset, request)
         serializer_class = self.serializer_class(result_page, many=True)
 
-        for item in serializer_class.data:
-            item['penukaran'] = json.loads(item['penukaran'].replace('\'','\"'))
+        # for item in serializer_class.data:
+        #     item['penukaran'] = json.loads(item['penukaran'].replace('\'','\"'))
 
         return paginator.get_paginated_response(serializer_class.data)
+
+    def post(self, request):
+        self.create(request)
         
+        return Response({
+            'message': 'Added successfully',
+        }, status = status.HTTP_201_CREATED) 
+    
 class OneProduk(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,

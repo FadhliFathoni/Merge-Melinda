@@ -12,8 +12,6 @@ class Kategori(models.Model):
     def __str__(self):
         return self.nama
 
-
-
 class Penukaran(models.Model):
     _id = models.ObjectIdField()
     id_pengguna = models.CharField(max_length=128)
@@ -42,9 +40,5 @@ class Produk(models.Model):
     created = models.DateField(auto_now_add=True)
     updated = models.DateField(auto_now=True)
 
-    # class Meta: 
-    #     indexes = [
-    #         indexes.Index. (fields=['nama', 'keterangan'])
-    #     ]
     def __str__(self):
         return self.nama
