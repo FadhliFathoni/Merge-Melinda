@@ -16,7 +16,7 @@ from bson.objectid import ObjectId
 from bson.errors import InvalidId
 
 from .models import Produk, Kategori, Penukaran
-from Account.models import Account
+from Account.models import User
 from API.ManagementUser.serializers import UserSerializer
 from .serializers import ProdukSerializers, KategoriSerializers, PenukaranSerializer
 
@@ -203,7 +203,7 @@ class ManyPenukaran(
             produk = Produk.objects.get(pk = ObjectId(pesanan['id_produk']))
             produkData = ProdukSerializers(produk).data
 
-            user = Account.objects.get(id = pesanan['id_pengguna'])
+            user = User.objects.get(id = pesanan['id_pengguna'])
             userData = UserSerializer(user).data
             
             biaya = produkData['harga'] * pesanan['jumlah']
@@ -262,7 +262,7 @@ def OnePenukaran(req, kode):
             produk = Produk.objects.get(pk = ObjectId(penukaranData['id_produk']))
             produkData = ProdukSerializers(produk).data
 
-            user = Account.objects.get(id = penukaranData['id_pengguna'])
+            user = User.objects.get(id = penukaranData['id_pengguna'])
             userData = UserSerializer(user).data
             
             if userData['poin'] < penukaranData['biaya']:

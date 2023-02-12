@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractUser, BaseUserManager, AbstractBaseUser
 
 
 class AccountManager(BaseUserManager):
@@ -30,13 +30,20 @@ class AccountManager(BaseUserManager):
         return user
 
 
-class Account(AbstractBaseUser):
-    name = models.TextField(blank=True, max_length=32,unique=True)
-    email = models.EmailField(verbose_name="email", max_length=32, unique=True)
-    phone = models.TextField(max_length=16)
-    alamat = models.TextField(max_length=128)
-    poin = models.IntegerField(default=0)
-    foto = models.TextField(max_length=128)
+# class Account(AbstractBaseUser):
+#     name = models.TextField(blank=True, max_length=32,unique=True)
+#     email = models.EmailField(verbose_name="email", max_length=32, unique=True)
+#     phone = models.TextField(max_length=16)
+#     alamat = models.TextField(max_length=128)
+#     poin = models.IntegerField(default=0)
+#     foto = models.TextField(max_length=128)
+class User(AbstractUser, models.Model):
+    name = models.TextField(blank=True, max_length=32, unique=True)
+    email = models.EmailField(max_length=32, unique=True)
+    phone = models.TextField(max_length=16, blank=True)
+    alamat = models.TextField(max_length=128, blank=True)
+    # poin = models.IntegerField(default=0)
+    foto = models.TextField(max_length=128, blank=True)
 
     createdAt = models.DateTimeField(
         verbose_name='date joined', auto_now_add=True)
@@ -51,16 +58,7 @@ class Account(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     last_login = models.DateTimeField(verbose_name='last login', auto_now=True)
 
+    username = None
+
     USERNAME_FIELD = 'email'
-    # REQUIRED_FIELDS = ['username',]
-
-    objects = AccountManager()
-
-    def __str__(self):
-        return self.email
-
-    def has_perm(self, perm, obj=None):
-        return self.is_adminDesa
-
-    def has_module_perms(self, app_label):
-        return True
+    REQUIRED_FIELDS = ['username']

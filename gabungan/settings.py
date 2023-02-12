@@ -24,14 +24,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'drf_yasg',
+    'rest_framework',
+    'corsheaders',
+
     'Account',
     'API.Mesin',
     'API.Minyak',
     'API.Produk',
     'API.Transaction',
     'API.ManagementUser',
-    'rest_framework',
-    'corsheaders',  
 ]
 
 MIDDLEWARE = [
@@ -45,16 +46,17 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
 ]
 
-CORS_ALLOW_ALL_ORIGINS: True
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'https://melinda-rosy.vercel.app/',
+    'https://melinda-rosy.vercel.app',
 ] 
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
     'http://localhost:3000',
-    'https://melinda-rosy.vercel.app/',
+    'https://melinda-rosy.vercel.app'
 ]
 
 
@@ -91,12 +93,25 @@ WSGI_APPLICATION = 'gabungan.wsgi.application'
 #         }
 #     }
 # }
+# SQL Lite
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+# MongoDb
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'djongo',
+#         'CLIENT': {
+#             'name': 'melinda',
+#             'host': 'mongodb://127.0.0.1:27017/melinda'
+#         }
+#     }
+# }
 
 
 
@@ -118,7 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'Account.Account'
+AUTH_USER_MODEL = 'Account.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/

@@ -7,27 +7,31 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.pagination import InvalidPage
-from Account.models import Account
+from Account.models import User
+
 
 class UserPagination(PageNumberPagination):
     page_size = 5
+
     def get_page_size(self, request):
         if "limit" in request.GET:
             self.page_size = request.GET["limit"]
         return super().get_page_size(request)
 
+
 class ListUser(ListAPIView):
-    queryset = Account.objects.all()
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     filter_backends = [OrderingFilter, SearchFilter]
-    search_fields = ("name","email")
+    search_fields = ("name", "email")
     pagination_class = UserPagination
     ordering = ["-createdAt"]
 
 # @api_view(["DELETE"])
 # def deleteUser(request,delete_id):
-#     Account.objects.filter(id = delete_id).first().delete()
+#     User.objects.filter(id = delete_id).first().delete()
+
 
 class deleteUser(DestroyAPIView):
-    queryset = Account.objects.all()
+    queryset = User.objects.all()
     serializer_class = UserSerializer
