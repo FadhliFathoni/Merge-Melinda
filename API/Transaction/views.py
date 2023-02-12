@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from django.utils.timezone import now
+from calendar import monthrange
 
 
 # Semua Transaksi
@@ -49,8 +50,12 @@ def filterHari(self):
 # Filter Transaksi (Sebulan Terakhir)
 @api_view(["GET"])
 def filterBulan(self):
-    data = Transaksi.objects.filter(
-        waktuTransaksi=now().date()-relativedelta(months=1))
+    some_datetime = datetime.utcnow()
+    start = some_datetime.date().replace(day=1)
+    end = some_datetime.date().replace(day=monthrange(
+        some_datetime.year, some_datetime.month)[1])
+
+    data = Transaksi.objects.filter(waktuTransaksi__range=[start, end])
     serializer = TransaksiSerializers(data, many=True)
     return Response(serializer.data)
 
@@ -60,5 +65,14 @@ def filterBulan(self):
 def filterTahun(self):
     data = Transaksi.objects.filter(
         waktuTransaksi=now().date()-relativedelta(years=1))
+    serializer = TransaksiSerializers(data, many=True)
+    return Response(serializer.data)
+
+
+# Filter Date Range
+@api_view(["GET"])
+def filterRange(self):
+    data = Transaksi.objects.filter(
+        waktuTransaksi__range=["2023-02-01", "2023-02-14"])
     serializer = TransaksiSerializers(data, many=True)
     return Response(serializer.data)

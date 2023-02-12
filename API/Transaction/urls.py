@@ -8,4 +8,5 @@ urlpatterns = [
     path('filterhari/', views.filterHari),
     path('filterbulan/', views.filterBulan),
     path('filtertahun/', views.filterTahun),
+    path('filterrange/', views.filterRange),
 ]
