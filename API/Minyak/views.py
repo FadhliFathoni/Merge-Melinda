@@ -4,10 +4,11 @@ from .models import Minyak
 from .serializers import MinyakSerializers, PoinSerializer
 from rest_framework.response import Response
 from Account.models import User
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import OrderingFilter, SearchFilter
-
+from rest_framework.views import APIView
+import datetime
 
 class MinyakPagination(PageNumberPagination):
     page_size = 5
@@ -31,15 +32,18 @@ class ListMinyak(ListAPIView):
 def addMinyak(request):
     try:
         user = User.objects.get(name=request.data["user"])
-        Minyak.objects.create(
-            user=user.name,
-            id_user=user.id,
-            email=user.email,
-            phone=user.phone,
-        )
+        try:
+            Minyak.objects.create(
+                user=user.name,
+                id_user=user.id,
+                email=user.email,
+                phone=user.phone,
+            )
+            return Response("Berhasil")
+        except:
+            return Response("Gagal")
     except:
         return Response("Username tidak tersedia")
-
 
 class ListPoin(ListAPIView):
     queryset = Minyak.objects.filter(status="Terverifikasi")
@@ -63,12 +67,16 @@ class Setoran(ListAPIView):
 def Verifikasi(request, id):
     data = Minyak.objects.filter(id=id)
     if "volume" in request.data:
-        data.update(
-            volume = request.data["volume"],
-            poin = int(request.data["volume"]) / 500,
-            status = "Terverifikasi"
-        )
-        serializer = MinyakSerializers(data=data)
-        if serializer.is_valid():
-            serializer.save()
+        if int(request.data["volume"]) >= 500:
+            data.update(
+                volume = request.data["volume"],
+                poin = int(request.data["volume"]) / 500,
+                status = "Terverifikasi",
+            )
+            serializer = MinyakSerializers(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response("Berhasil")
+        else:
+            return Response("Volume kurang")
     return Response(serializer.data)
