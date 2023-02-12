@@ -29,6 +29,6 @@ urlpatterns = [
     path('minyak/', include("API.Minyak.urls")),
     path('produk/', include("API.Produk.urls")),
     path('transaksi/', include("API.Transaction.urls")),
-    path('user/', include("API.ManagementUser.urls")),
+    path('users/', include("API.ManagementUser.urls")),
     # path('login/', views.loginView),
 ]
