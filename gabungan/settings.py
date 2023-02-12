@@ -52,7 +52,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'https://melinda-rosy.vercel.app',
-] 
+]
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
     'http://localhost:3000',
@@ -101,20 +101,6 @@ DATABASES = {
     }
 }
 
-
-# MongoDb
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'djongo',
-#         'CLIENT': {
-#             'name': 'melinda',
-#             'host': 'mongodb://127.0.0.1:27017/melinda'
-#         }
-#     }
-# }
-
-
-
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
@@ -162,3 +148,5 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None

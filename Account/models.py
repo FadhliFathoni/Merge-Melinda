@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager, AbstractBa
 
 
 class AccountManager(BaseUserManager):
+    use_in_migrations = True
+
     def create_user(self, email, password, phone, name):
         if not email:
             raise ValueError("Users must have an email")
@@ -21,7 +23,7 @@ class AccountManager(BaseUserManager):
         user.is_adminDesa = True
         user.is_user = True
         user.is_superAdmin = True
-        user.is_staff= True
+        user.is_staff = True
 
         user.poin = None
 
@@ -60,5 +62,7 @@ class User(AbstractUser, models.Model):
 
     username = None
 
+    objects = AccountManager()
+
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = []
