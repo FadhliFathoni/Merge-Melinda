@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'Account',
+    'API.Poin',
     'API.Mesin',
     'API.Minyak',
     'API.Produk',

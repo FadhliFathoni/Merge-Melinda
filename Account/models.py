@@ -24,6 +24,7 @@ class AccountManager(BaseUserManager):
         user.is_user = True
         user.is_superAdmin = True
         user.is_staff = True
+        user.is_superuser = True
 
         # user.poin = None
 

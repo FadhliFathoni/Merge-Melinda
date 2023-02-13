@@ -1,7 +1,7 @@
 from django.shortcuts import redirect
 from rest_framework.decorators import api_view
 from .models import Minyak
-from .serializers import MinyakSerializers, PoinSerializer
+from .serializers import MinyakSerializers
 from rest_framework.response import Response
 from Account.models import User
 from rest_framework.generics import ListAPIView, CreateAPIView
@@ -9,6 +9,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.views import APIView
 import datetime
+from API.Poin.models import Poin
+from API.Poin.serializers import PoinSerializer
 
 class MinyakPagination(PageNumberPagination):
     page_size = 5
@@ -66,17 +68,35 @@ class Setoran(ListAPIView):
 @api_view(["POST"])
 def Verifikasi(request, id):
     data = Minyak.objects.filter(id=id)
+    user_id = Minyak.objects.get(id = id).id_user
+    email = User.objects.get(id = user_id)
     if "volume" in request.data:
         if int(request.data["volume"]) >= 500:
+            poin = int(request.data["volume"]) / 500
             data.update(
                 volume = request.data["volume"],
-                poin = int(request.data["volume"]) / 500,
+                poin = poin,
                 status = "Terverifikasi",
             )
+            try:
+                Poin.objects.create(
+                id_user = user_id,
+                email = email,
+                poin = poin
+                )
+            except:
+                poin = int(Poin.objects.get(email = email).poin + poin)
+                updatePoin = Poin.objects.filter(email = email)
+                updatePoin.update(
+                    poin = poin
+                )
+                pserializer = PoinSerializer(data = updatePoin)
+                if pserializer.is_valid():
+                    pserializer.save()
             serializer = MinyakSerializers(data=data)
             if serializer.is_valid():
                 serializer.save()
                 return Response("Berhasil")
         else:
             return Response("Volume kurang")
-    return Response(serializer.data)
+    return Response("Verifikasi")
