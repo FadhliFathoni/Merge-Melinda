@@ -5,6 +5,7 @@ from .serializers import UserSerializer
 from .models import User
 import jwt
 import datetime
+from jwt import decode
 
 class RegisterView(APIView):
     def post(self, request):
