@@ -25,7 +25,7 @@ class AccountManager(BaseUserManager):
         user.is_superAdmin = True
         user.is_staff = True
 
-        user.poin = None
+        # user.poin = None
 
         user.set_password(password)
         user.save(using=self.db)
