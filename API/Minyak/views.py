@@ -36,7 +36,7 @@ def addMinyak(request):
         user = User.objects.get(name=request.data["user"])
         try:
             Minyak.objects.create(
-                user=user.name,
+                nama=user.name,
                 id_user=user.id,
                 email=user.email,
                 phone=user.phone,

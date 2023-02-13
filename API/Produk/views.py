@@ -17,6 +17,8 @@ from bson.errors import InvalidId
 
 from .models import Produk, Kategori, Penukaran
 from Account.models import User
+from API.Poin.models import Poin
+from API.Poin.serializers import PoinSerializer
 from API.ManagementUser.serializers import UserSerializer
 from .serializers import ProdukSerializers, KategoriSerializers, PenukaranSerializer
 
@@ -203,8 +205,8 @@ class ManyPenukaran(
             produk = Produk.objects.get(pk = ObjectId(pesanan['id_produk']))
             produkData = ProdukSerializers(produk).data
 
-            user = User.objects.get(id = pesanan['id_pengguna'])
-            userData = UserSerializer(user).data
+            user = Poin.objects.get(id_user = pesanan['id_pengguna'])
+            userData = PoinSerializer(user).data
             
             biaya = produkData['harga'] * pesanan['jumlah']
 
@@ -216,9 +218,8 @@ class ManyPenukaran(
             invoice = {
                 'id_pengguna': pesanan['id_pengguna'],
                 'id_produk': pesanan['id_produk'],
-                'nama': userData['name'],
+                'nama': userData['nama'],
                 'email': userData['email'],
-                'phone': userData['phone'],
                 'kode': str("".join(random.choice(string.ascii_letters + string.digits ) for x in range(12))),
                 'produk': produkData['nama'],
                 'jumlah': pesanan['jumlah'],
@@ -235,6 +236,7 @@ class ManyPenukaran(
                     'message': 'Redeem added to queue',
                 }, status = status.HTTP_201_CREATED)                    
             
+            print(invoiceData.errors)
             return Response({
                 'message': 'Redeem failure',
             }, status = status.HTTP_400_BAD_REQUEST) 
@@ -262,10 +264,13 @@ def OnePenukaran(req, kode):
             produk = Produk.objects.get(pk = ObjectId(penukaranData['id_produk']))
             produkData = ProdukSerializers(produk).data
 
-            user = User.objects.get(id = penukaranData['id_pengguna'])
-            userData = UserSerializer(user).data
+            # user = User.objects.get(_id = penukaranData['id_pengguna'])
+            # userData = UserSerializer(user).data
             
-            if userData['poin'] < penukaranData['biaya']:
+            poinUser = Poin.objects.get(id_user = penukaranData['id_pengguna'])
+            poinUserData = PoinSerializer(poinUser).data
+            
+            if poinUserData['poin'] < penukaranData['biaya']:
                 return Response({
                     'message': f'Point is not enough',
                 }, status = status.HTTP_406_NOT_ACCEPTABLE)
@@ -280,7 +285,7 @@ def OnePenukaran(req, kode):
                 'stok': produkData['stok'] - penukaranData['jumlah'],
                 'penukar': produkData['penukar'] + 1
                 }, partial=True)
-            userUpdate = UserSerializer(user, data={'poin': userData['poin'] - penukaranData['biaya']}, partial=True)
+            userUpdate = PoinSerializer(poinUser, data={'poin': poinUserData['poin'] - penukaranData['biaya']}, partial=True)
 
             if penukaranUpdate.is_valid() and produkUpdate.is_valid() and userUpdate.is_valid():
                 penukaranUpdate.save()
