@@ -73,8 +73,9 @@ def Verifikasi(request, id):
     if "volume" in request.data:
         if int(request.data["volume"]) >= 500:
             poin = int(request.data["volume"]) / 500
+            volume = request.data["volume"]
             data.update(
-                volume = request.data["volume"],
+                volume = volume,
                 poin = poin,
                 status = "Terverifikasi",
             )
@@ -82,13 +83,16 @@ def Verifikasi(request, id):
                 Poin.objects.create(
                 id_user = user_id,
                 email = email,
-                poin = poin
+                poin = poin,
+                volume = volume
                 )
             except:
                 poin = int(Poin.objects.get(email = email).poin + poin)
+                volume = int(Poin.objects.get(email = email).volume + volume)
                 updatePoin = Poin.objects.filter(email = email)
                 updatePoin.update(
-                    poin = poin
+                    poin = poin,
+                    volume = volume
                 )
                 pserializer = PoinSerializer(data = updatePoin)
                 if pserializer.is_valid():
