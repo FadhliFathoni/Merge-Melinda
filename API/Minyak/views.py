@@ -73,7 +73,7 @@ def Verifikasi(request, id):
     if "volume" in request.data:
         if int(request.data["volume"]) >= 500:
             poin = int(request.data["volume"]) / 500
-            volume = request.data["volume"]
+            volume = int(request.data["volume"])
             data.update(
                 volume = volume,
                 poin = poin,
@@ -87,8 +87,8 @@ def Verifikasi(request, id):
                 volume = volume
                 )
             except:
-                poin = int(Poin.objects.get(email = email).poin + poin)
-                volume = int(Poin.objects.get(email = email).volume + volume)
+                poin = int(Poin.objects.get(email = email).poin) + poin
+                volume = int(Poin.objects.get(email = email).volume) + volume
                 updatePoin = Poin.objects.filter(email = email)
                 updatePoin.update(
                     poin = poin,
