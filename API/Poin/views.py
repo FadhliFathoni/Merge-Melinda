@@ -27,6 +27,6 @@ def getPoin(request):
         raise AuthenticationFailed('Unauthenticated!')
 
     user_id = User.objects.get(id=payload['id']).id
-    poin = Poin.objects.filter(id_user = user_id)
-    serializer = PoinSerializer(poin, many = True)
+    poin = Poin.objects.filter(id_user = user_id).first()
+    serializer = PoinSerializer(poin)
     return Response(serializer.data)
