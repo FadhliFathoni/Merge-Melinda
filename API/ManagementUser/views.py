@@ -1,5 +1,5 @@
 from django.shortcuts import redirect
-from rest_framework.generics import ListAPIView, DestroyAPIView
+from rest_framework.generics import ListAPIView, DestroyAPIView, GenericAPIView
 from django.contrib.auth.models import User
 from .serializers import UserSerializer
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -12,6 +12,7 @@ from API.Minyak.models import Minyak
 from API.Minyak.serializers import MinyakSerializers
 from API.Poin.models import Poin
 from API.Poin.serializers import PoinSerializer
+from rest_framework.mixins import DestroyModelMixin
 
 
 class UserPagination(PageNumberPagination):
@@ -44,3 +45,14 @@ class ListUser(ListAPIView):
 class deleteUser(DestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+class destroyUser(GenericAPIView,DestroyModelMixin):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def delete(self, request, *args, **kwargs):
+        print(kwargs["pk"])
+        User.objects.filter(id = kwargs["pk"]).delete()
+        Minyak.objects.filter(id_user = kwargs["pk"]).delete()
+        Poin.objects.filter(id_user = kwargs["pk"]).delete()
+        return super().destroy(request, *args, **kwargs)

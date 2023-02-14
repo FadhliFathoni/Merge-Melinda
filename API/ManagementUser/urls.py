@@ -3,5 +3,5 @@ from . import views
 
 urlpatterns = [
     path('',views.ListUser.as_view()),
-    path('<int:pk>/delete/',views.deleteUser.as_view())
+    path('<int:pk>/delete/',views.destroyUser.as_view())
 ]
