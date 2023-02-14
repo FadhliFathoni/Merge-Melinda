@@ -8,6 +8,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.pagination import InvalidPage
 from Account.models import User
+from API.Minyak.models import Minyak
+from API.Poin.models import Poin
 
 
 class UserPagination(PageNumberPagination):
@@ -27,11 +29,22 @@ class ListUser(ListAPIView):
     pagination_class = UserPagination
     ordering = ["-createdAt"]
 
-# @api_view(["DELETE"])
-# def deleteUser(request,delete_id):
-#     User.objects.filter(id = delete_id).first().delete()
+@api_view(["DELETE"])
+def deleteUser(request,pk):
+    try:
+        User.objects.filter(id = pk).delete()
+    except:
+        return Response("User tidak ada")
+    try:
+        Minyak.objects.filter(id_user = pk).delete()
+    except:
+        return Response("Minyak Tidak ada")
+    try:
+        Poin.objects.filter(id_user = pk).delete()
+    except:
+        return Response("Poin Tidak ada")
 
 
-class deleteUser(DestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+# class deleteUser(DestroyAPIView):
+#     queryset = User.objects.all()
+#     serializer_class = UserSerializer
