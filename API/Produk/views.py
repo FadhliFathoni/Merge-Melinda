@@ -37,9 +37,10 @@ class ManyProduk(
 ):
     serializer_class = ProdukSerializers
     queryset = Produk.objects.all()
-    filter_backends = [SearchFilter]
+    filter_backends = [OrderingFilter, SearchFilter]
     search_fields = ['nama', 'keterangan', 'kategori']
     parser_classes = [MultiPartParser]
+    ordering = ['-created']
 
     def get(self, request):
         queryset = self.get_queryset()
@@ -111,7 +112,7 @@ class ManyKategori(
     queryset = Kategori.objects.all()
     filter_backends = [OrderingFilter, SearchFilter]
     search_fields = ['nama']
-    ordering_fields = ['created']
+    ordering = ['-created']
 
     def get(self, request):
         queryset = self.get_queryset()
@@ -182,7 +183,7 @@ class ManyPenukaran(
     queryset = Penukaran.objects.all()
     filter_backends = [OrderingFilter, SearchFilter]
     search_fields = ['nama', 'kode']
-    ordering_fields = ['-created']
+    ordering = ['-created']
 
     def get(self, request):
         queryset = self.get_queryset()

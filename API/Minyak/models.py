@@ -2,7 +2,8 @@ from django.db import models
 
 class Minyak(models.Model):
     user = models.CharField(max_length=50)
-    id_user = models.IntegerField(null=True)
+    id_user = models.CharField(max_length=128, null=True)
+    nama = models.CharField(max_length=32)
     email = models.EmailField(null=True)
     phone = models.TextField(max_length=16,null=True)
     volume = models.IntegerField(null=True)
