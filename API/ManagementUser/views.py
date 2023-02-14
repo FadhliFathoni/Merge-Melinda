@@ -31,16 +31,16 @@ class ListUser(ListAPIView):
     pagination_class = UserPagination
     ordering = ["-createdAt"]
 
-@api_view(["DELETE"])
-def deleteUser(request,pk):
-    try:
-        User.objects.filter(id = pk).delete()
-        Minyak.objects.filter(id_user = pk).delete()
-        Poin.objects.filter(id_user = pk).delete()
-    except:
-        return Response("Delete Invalid")
+# @api_view(["DELETE"])
+# def deleteUser(request,pk):
+#     try:
+#         User.objects.filter(id = pk).delete()
+#         Minyak.objects.filter(id_user = pk).delete()
+#         Poin.objects.filter(id_user = pk).delete()
+#     except:
+#         return Response("Delete Invalid")
 
 
-# class deleteUser(DestroyAPIView):
-#     queryset = User.objects.all(), Minyak.objects.all(), Poin.objects.all()
-#     serializer_class = UserSerializer, 
+class deleteUser(DestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
