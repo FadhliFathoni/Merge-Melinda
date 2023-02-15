@@ -240,6 +240,7 @@ class ManyPenukaran(
             print(invoiceData.errors)
             return Response({
                 'message': 'Redeem failure',
+                'tes': invoiceData.errors
             }, status = status.HTTP_400_BAD_REQUEST) 
 
         except (InvalidId, ObjectDoesNotExist):
