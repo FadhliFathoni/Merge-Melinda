@@ -87,20 +87,20 @@ WSGI_APPLICATION = 'gabungan.wsgi.application'
 
 # MongoDb
 DATABASES = {
-    'default': {
-        'ENGINE': 'djongo',
-        'CLIENT': {
-            'name': 'melinda',
-            'host': 'mongodb://127.0.0.1:27017/melinda'
-        }
-    }
     # 'default': {
     #     'ENGINE': 'djongo',
     #     'CLIENT': {
     #         'name': 'melinda',
-    #         'host': 'mongodb://cobadulu:cobadulu@%2Fhome%2Ffourtour%2Fmongodb-0.sock/melinda?authSource=admin'
+    #         'host': 'mongodb://127.0.0.1:27017/melinda'
     #     }
     # }
+    'default': {
+        'ENGINE': 'djongo',
+        'CLIENT': {
+            'name': 'melinda',
+            'host': 'mongodb://cobadulu:cobadulu@%2Fhome%2Ffourtour%2Fmongodb-0.sock/melinda?authSource=admin'
+        }
+    }
 }
 
 # SQL Lite
