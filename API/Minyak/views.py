@@ -73,8 +73,8 @@ class Setoran(ListAPIView):
 @api_view(["POST"])
 def Verifikasi(request, id):
     data = Minyak.objects.filter(id=id)
-    user_id = Minyak.objects.get(id = id).id_user
-    email = User.objects.get(_id = ObjectId(user_id))
+    userData = Minyak.objects.get(id = id)
+    email = User.objects.get(_id = ObjectId(userData.id_user))
     
     if "volume" in request.data:
         if int(request.data["volume"]) >= 500:
@@ -88,7 +88,8 @@ def Verifikasi(request, id):
             )
             try:
                 Poin.objects.create(
-                id_user = user_id,
+                id_user = userData.id_user,
+                nama = userData.nama,
                 email = email,
                 poin = poin,
                 volume = volume
