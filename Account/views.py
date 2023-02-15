@@ -6,6 +6,7 @@ from .models import User
 import jwt
 import datetime
 from jwt import decode
+from bson.objectid import ObjectId
 
 class RegisterView(APIView):
     def post(self, request):
@@ -59,7 +60,7 @@ class UserView(APIView):
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Unauthenticated!')
 
-        user = User.objects.filter(id=payload['id']).first()
+        user = User.objects.filter(_id=ObjectId(payload['id'])).first()
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
