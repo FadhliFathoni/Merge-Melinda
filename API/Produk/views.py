@@ -11,6 +11,7 @@ from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView, ListAPIView, CreateAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination, InvalidPage
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.exceptions import AuthenticationFailed
 
 from bson.objectid import ObjectId 
 from bson.errors import InvalidId
@@ -23,6 +24,7 @@ from API.ManagementUser.serializers import UserSerializer
 from .serializers import ProdukSerializers, KategoriSerializers, PenukaranSerializer
 
 import sys
+import jwt
 import json
 import datetime
 from operator import itemgetter
@@ -247,6 +249,24 @@ class ManyPenukaran(
             return Response({
                 'message': 'Not found!',
             }, status = status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+def userPenukaran(req):
+    token = req.COOKIES.get('jwt')
+    
+    
+    if not token:
+        raise AuthenticationFailed('Unauthenticated!')
+    try:
+        payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+    except jwt.ExpiredSignatureError:
+        raise AuthenticationFailed('Unauthenticated!')
+
+    userPenukaran = Penukaran.objects.filter(id_pengguna = payload['id'] )
+    serializer = PenukaranSerializer(userPenukaran, many=True)
+
+    return Response(serializer.data)
+    
     
 @api_view(['GET', 'DELETE'])
 def OnePenukaran(req, kode):

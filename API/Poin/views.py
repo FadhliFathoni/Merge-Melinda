@@ -29,7 +29,6 @@ def getPoin(request):
 
     user_id = User.objects.get(_id=ObjectId(payload['id']))._id
     
-    print(user_id)
     poin = Poin.objects.filter(id_user = str(user_id)).first()
     serializer = PoinSerializer(poin)
     return Response(serializer.data)
