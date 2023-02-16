@@ -55,8 +55,8 @@ class User(AbstractUser, models.Model):
         verbose_name='date updated', auto_now_add=True)
 
     is_adminDesa = models.BooleanField(default=False)  # Admin Desa
-    is_user = models.BooleanField(default=False)  # User
-    is_superAdmin = models.BooleanField(default=True)  # Super Admin
+    is_user = models.BooleanField(default=True)  # User
+    is_superAdmin = models.BooleanField(default=False)  # Super Admin
     is_staff = models.BooleanField(default=False)  # Super Admin
 
     is_active = models.BooleanField(default=True)
