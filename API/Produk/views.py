@@ -13,6 +13,8 @@ from rest_framework.pagination import PageNumberPagination, InvalidPage
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.exceptions import AuthenticationFailed
 
+from django_filters.rest_framework import DjangoFilterBackend
+
 from bson.objectid import ObjectId 
 from bson.errors import InvalidId
 
@@ -175,6 +177,15 @@ class OneKategori(
         except (InvalidId, ObjectDoesNotExist) :
             return Response({'message': 'Not found!','result': False}, status = status.HTTP_404_NOT_FOUND)     
         
+@api_view(['GET'])
+def tesPenukaran(req):
+    data = Penukaran.objects.filter(selesai=False)
+    print(data)
+    serializer = PenukaranSerializer(data)
+
+    return Response(serializer.data)
+    
+    
 # PENUKARAN 
 class ManyPenukaran(
     mixins.ListModelMixin,
@@ -183,8 +194,9 @@ class ManyPenukaran(
 ):
     serializer_class = PenukaranSerializer
     queryset = Penukaran.objects.all()
-    filter_backends = [OrderingFilter, SearchFilter]
-    search_fields = ['nama', 'kode']
+    filter_backends = [ DjangoFilterBackend,OrderingFilter, SearchFilter]
+    filterset_fields = ['status']
+    search_fields = ['nama', 'kode', 'selesai']
     ordering = ['-created']
 
     def get(self, request):
@@ -304,7 +316,7 @@ def OnePenukaran(req, kode):
                     'message': f'Product stock is not enough',
                 }, status = status.HTTP_406_NOT_ACCEPTABLE)
 
-            penukaranUpdate = PenukaranSerializer(penukaran, data={'selesai': True}, partial=True)
+            penukaranUpdate = PenukaranSerializer(penukaran, data={'status': 'ok'}, partial=True)
             produkUpdate = ProdukSerializers(produk, data={
                 'stok': produkData['stok'] - penukaranData['jumlah'],
                 'penukar': produkData['penukar'] + 1

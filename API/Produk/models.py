@@ -43,7 +43,7 @@ class Penukaran(models.Model):
     produk = models.CharField(max_length=128)
     jumlah = models.IntegerField()
     biaya = models.IntegerField(default=0)
-    selesai = models.BooleanField(default=False) # barau
+    status = models.CharField(max_length=32, default='menunggu') # barau
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
