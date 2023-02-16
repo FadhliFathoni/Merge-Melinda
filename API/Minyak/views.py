@@ -53,8 +53,10 @@ class ListMinyak(ListAPIView):
 
 @api_view(["POST"])
 def addMinyak(request):
+    print('hello')
     try:
         user = User.objects.get(name=request.data["user"])
+
         try:
             Minyak.objects.create(
                 nama=user.name,

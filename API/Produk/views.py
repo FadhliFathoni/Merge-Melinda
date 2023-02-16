@@ -281,6 +281,7 @@ def OnePenukaran(req, kode):
             }, status = status.HTTP_204_NO_CONTENT)
 
         elif req.method == 'GET':
+            
 
             produk = Produk.objects.get(pk = ObjectId(penukaranData['id_produk']))
             produkData = ProdukSerializers(produk).data
@@ -290,6 +291,8 @@ def OnePenukaran(req, kode):
             
             poinUser = Poin.objects.get(id_user = penukaranData['id_pengguna'])
             poinUserData = PoinSerializer(poinUser).data
+
+            
             
             if poinUserData['poin'] < penukaranData['biaya']:
                 return Response({
@@ -308,10 +311,12 @@ def OnePenukaran(req, kode):
                 }, partial=True)
             userUpdate = PoinSerializer(poinUser, data={'poin': poinUserData['poin'] - penukaranData['biaya']}, partial=True)
 
+
             if penukaranUpdate.is_valid() and produkUpdate.is_valid() and userUpdate.is_valid():
                 penukaranUpdate.save()
                 produkUpdate.save()
                 userUpdate.save()
+                print('hello')
                 
                 return Response({
                     'message': f'Redeem verified',
