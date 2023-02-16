@@ -33,7 +33,7 @@ class ListMinyak(ListAPIView):
     pagination_class = MinyakPagination
     filter_backends = [OrderingFilter, SearchFilter]
     search_fields = ("user", "email")
-    ordering = ["-created"]
+    ordering = ["-updated"]
 
     def get_queryset(self):
         now = datetime.now().date()
@@ -107,11 +107,12 @@ def Verifikasi(request, id):
                 volume = volume,
                 poin = poin,
                 status = "Terverifikasi",
+                updated = now()
             )
             try:
                 Poin.objects.create(
                 id_user = userData.id,
-                nama = userData.nama,
+                nama = userData.user,
                 email = email,
                 poin = poin,
                 volume = volume

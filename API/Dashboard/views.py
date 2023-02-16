@@ -8,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 @api_view(["GET"])
 def dashboard(request):
     now = datetime.now().date()
-    minyak = Minyak.objects.filter(created__icontains = now)
+    minyak = Minyak.objects.filter(status = "Terverifikasi",created__icontains = now)
     user = User.objects.filter(createdAt__icontains = now)
     setor = Minyak.objects.filter(status = "Terverifikasi", created__icontains = now)
     totalMinyak = 0
