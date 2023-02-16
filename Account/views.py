@@ -67,11 +67,7 @@ class UserView(APIView):
         user = User.objects.filter(_id=ObjectId(payload['id'])).first()
         serializer = UserSerializer(user)
         
-        return Response({            
-            'token': token,
-            'payload': payload,
-            'data': serializer.data
-        })
+        return Response(serializer.data)
 
 
 class LogoutView(APIView):
