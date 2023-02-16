@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.parsers import JSONParser
 from .serializers import UserSerializer
 from .models import User
 import jwt
@@ -50,12 +51,11 @@ class LoginView(APIView):
 
 class UserView(APIView):
     def get(self, request):
-        token = request.headers.get('jwt')
-
+        # token = request.headers.get('jwt')
+        token = JSONParser().parse(request)['jwt']
         # token = request.headers.get('token', None)
 
         # print(type(token))
-
         if not token or token == '':
             raise AuthenticationFailed('Unauthenticated!')
 
