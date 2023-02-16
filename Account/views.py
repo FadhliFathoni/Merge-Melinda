@@ -9,6 +9,8 @@ import datetime
 from jwt import decode
 from bson.objectid import ObjectId
 
+import sys
+
 class RegisterView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -50,24 +52,22 @@ class LoginView(APIView):
 
 
 class UserView(APIView):
-    def get(self, request):
-        # token = request.headers.get('jwt')
-        token = JSONParser().parse(request)['jwt']
-        # token = request.headers.get('token', None)
+    def post(self, request):
+            token = request.data.get('jwt')
+    
+            if not token or token == '':
+                raise AuthenticationFailed('Unauthenticated!')
+    
+            try:
+                payload = jwt.decode(token, 'secret', algorithm=['HS256'])
+            except jwt.ExpiredSignatureError:
+                raise AuthenticationFailed('Unauthenticated!')
+    
+            user = User.objects.filter(_id=ObjectId(payload['id'])).first()
+            serializer = UserSerializer(user)
+            
+            return Response(serializer.data)
 
-        # print(type(token))
-        if not token or token == '':
-            raise AuthenticationFailed('Unauthenticated!')
-
-        try:
-            payload = jwt.decode(token, 'secret', algorithm=['HS256'])
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Unauthenticated!')
-
-        user = User.objects.filter(_id=ObjectId(payload['id'])).first()
-        serializer = UserSerializer(user)
-        
-        return Response(serializer.data)
 
 
 class LogoutView(APIView):

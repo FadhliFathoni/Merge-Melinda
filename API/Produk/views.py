@@ -252,10 +252,9 @@ class ManyPenukaran(
     
 @api_view(['GET'])
 def userPenukaran(req):
-    token = req.COOKIES.get('jwt')
+    token = request.data.get('jwt')    
     
-    
-    if not token:
+    if not token or token == '':
         raise AuthenticationFailed('Unauthenticated!')
     try:
         payload = jwt.decode(token, 'secret', algorithms=['HS256'])
