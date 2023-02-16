@@ -18,7 +18,7 @@ class ListPoin(ListAPIView):
 
 @api_view(["GET"])
 def getPoin(request):
-    token = request.COOKIES.get('jwt')
+    token = request.headers.get('jwt')
 
     if not token:
         raise AuthenticationFailed('Unauthenticated!')

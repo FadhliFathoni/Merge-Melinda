@@ -50,9 +50,13 @@ class LoginView(APIView):
 
 class UserView(APIView):
     def get(self, request):
-        token = request.COOKIES.get('jwt')
+        token = request.headers.get('jwt')
 
-        if not token:
+        # token = request.headers.get('token', None)
+
+        # print(type(token))
+
+        if not token or token == '':
             raise AuthenticationFailed('Unauthenticated!')
 
         try:
