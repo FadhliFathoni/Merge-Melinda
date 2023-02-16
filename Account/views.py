@@ -30,7 +30,7 @@ class LoginView(APIView):
             raise AuthenticationFailed('Incorrect password!')
 
         payload = {
-            'id': str(user._id),
+            'id': str(user.id),
             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
             'iat': datetime.datetime.utcnow()
         }
@@ -51,6 +51,7 @@ class LoginView(APIView):
 class UserView(APIView):
     def get(self, request):
         token = request.headers.get('jwt')
+        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjIzIiwiZXhwIjoxNjc2NTQ5MTk3LCJpYXQiOjE2NzY1NDU1OTd9.tl5T0GvgwRlsod9SCVlD86ynzKCG74vMWCgoJdyHtWE"
 
         # token = request.headers.get('token', None)
 
@@ -64,8 +65,10 @@ class UserView(APIView):
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Unauthenticated!')
 
-        user = User.objects.filter(_id=ObjectId(payload['id'])).first()
+        user = User.objects.filter(id=payload['id']).first()
         serializer = UserSerializer(user)
+
+        
         
         return Response(serializer.data)
 
