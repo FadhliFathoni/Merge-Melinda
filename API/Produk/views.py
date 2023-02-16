@@ -191,7 +191,7 @@ class ManyPenukaran(
         queryset = self.get_queryset()
         
         paginator = PageNumberPagination()
-        paginator.page_size = 20
+        paginator.page_size = 10
 
         for backend in list(self.filter_backends):
             queryset = backend().filter_queryset(self.request, queryset, self)

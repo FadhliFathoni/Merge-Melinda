@@ -18,9 +18,9 @@ class ListPoin(ListAPIView):
 
 @api_view(["GET"])
 def getPoin(request):
-    token = request.headers.get('jwt')
+    token = request.data.get('jwt')
 
-    if not token:
+    if not token or token == '':
         raise AuthenticationFailed('Unauthenticated!')
     try:
         payload = jwt.decode(token, 'secret', algorithm=['HS256'])

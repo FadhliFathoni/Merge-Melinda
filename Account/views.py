@@ -53,20 +53,20 @@ class LoginView(APIView):
 
 class UserView(APIView):
     def post(self, request):
-            token = request.data.get('jwt')
-    
-            if not token or token == '':
-                raise AuthenticationFailed('Unauthenticated!')
-    
-            try:
-                payload = jwt.decode(token, 'secret', algorithm=['HS256'])
-            except jwt.ExpiredSignatureError:
-                raise AuthenticationFailed('Unauthenticated!')
-    
-            user = User.objects.filter(_id=ObjectId(payload['id'])).first()
-            serializer = UserSerializer(user)
-            
-            return Response(serializer.data)
+        token = request.data.get('jwt')
+
+        if not token or token == '':
+            raise AuthenticationFailed('Unauthenticated!')
+
+        try:
+            payload = jwt.decode(token, 'secret', algorithm=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Unauthenticated!')
+
+        user = User.objects.filter(_id=ObjectId(payload['id'])).first()
+        serializer = UserSerializer(user)
+        
+        return Response(serializer.data)
 
 
 
