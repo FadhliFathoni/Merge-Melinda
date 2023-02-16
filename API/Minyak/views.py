@@ -36,23 +36,20 @@ class ListMinyak(ListAPIView):
     ordering = ["-created"]
 
     def get_queryset(self):
-        
         now = datetime.now().date()
         queryset = Minyak.objects.filter(status="Terverifikasi")
-        if "date" in self.request.GET:
-            date = self.request.GET["date"]
-            if date == "today":
-                print("Today")
-                queryset = Minyak.objects.filter(status="Terverifikasi",created__icontains = now)
-            elif date == "yesterday":
-                queryset = Minyak.objects.filter(status = "Terverifikasi",created__icontains = now-relativedelta(days=1))
+        if "start" in self.request.GET and "end" in self.request.GET:
+                start = self.request.GET["start"]
+                end = self.request.GET["end"]
+                queryset = Minyak.objects.filter(status="Terverifikasi", created__range = [start,end])
+        # if "date" in self.request.GET:
+        #     date = self.request.GET["date"]
+        #     if date == "today":
+        #         print("Today")
+        #         queryset = Minyak.objects.filter(status="Terverifikasi",created__icontains = now)
+        #     elif date == "yesterday":
+        #         queryset = Minyak.objects.filter(status = "Terverifikasi",created__icontains = now-relativedelta(days=1))
         return queryset
-    
-    def get(self, request):
-        
-        return super().get(request)
-    
-
 
 @api_view(["POST"])
 def addMinyak(request):
