@@ -16,7 +16,7 @@ class ListPoin(ListAPIView):
     filter_backends = [OrderingFilter,SearchFilter]
     search_fields = ("email")
 
-@api_view(["GET"])
+@api_view(["POST"])
 def getPoin(request):
     token = request.data.get('jwt')
 
