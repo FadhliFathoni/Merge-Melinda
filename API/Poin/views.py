@@ -5,6 +5,7 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 import jwt
+from bson.objectid import ObjectId
 from Account.serializers import UserSerializer
 from Account.models import User
 from rest_framework.exceptions import AuthenticationFailed
@@ -17,7 +18,7 @@ class ListPoin(ListAPIView):
 
 @api_view(["GET"])
 def getPoin(request):
-    token = request.COOKIES.get('jwt')
+    token = request.headers.get('jwt')
 
     if not token:
         raise AuthenticationFailed('Unauthenticated!')
@@ -26,7 +27,8 @@ def getPoin(request):
     except jwt.ExpiredSignatureError:
         raise AuthenticationFailed('Unauthenticated!')
 
-    user_id = User.objects.get(id=payload['id']).id
-    poin = Poin.objects.filter(id_user = user_id).first()
+    user_id = User.objects.get(_id=ObjectId(payload['id']))._id
+    
+    poin = Poin.objects.filter(id_user = str(user_id)).first()
     serializer = PoinSerializer(poin)
     return Response(serializer.data)

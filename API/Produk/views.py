@@ -11,16 +11,20 @@ from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView, ListAPIView, CreateAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination, InvalidPage
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.exceptions import AuthenticationFailed
 
 from bson.objectid import ObjectId 
 from bson.errors import InvalidId
 
 from .models import Produk, Kategori, Penukaran
 from Account.models import User
+from API.Poin.models import Poin
+from API.Poin.serializers import PoinSerializer
 from API.ManagementUser.serializers import UserSerializer
 from .serializers import ProdukSerializers, KategoriSerializers, PenukaranSerializer
 
 import sys
+import jwt
 import json
 import datetime
 from operator import itemgetter
@@ -35,9 +39,10 @@ class ManyProduk(
 ):
     serializer_class = ProdukSerializers
     queryset = Produk.objects.all()
-    filter_backends = [SearchFilter]
+    filter_backends = [OrderingFilter, SearchFilter]
     search_fields = ['nama', 'keterangan', 'kategori']
     parser_classes = [MultiPartParser]
+    ordering = ['-created']
 
     def get(self, request):
         queryset = self.get_queryset()
@@ -109,7 +114,7 @@ class ManyKategori(
     queryset = Kategori.objects.all()
     filter_backends = [OrderingFilter, SearchFilter]
     search_fields = ['nama']
-    ordering_fields = ['created']
+    ordering = ['-created']
 
     def get(self, request):
         queryset = self.get_queryset()
@@ -180,7 +185,7 @@ class ManyPenukaran(
     queryset = Penukaran.objects.all()
     filter_backends = [OrderingFilter, SearchFilter]
     search_fields = ['nama', 'kode']
-    ordering_fields = ['-created']
+    ordering = ['-created']
 
     def get(self, request):
         queryset = self.get_queryset()
@@ -203,8 +208,8 @@ class ManyPenukaran(
             produk = Produk.objects.get(pk = ObjectId(pesanan['id_produk']))
             produkData = ProdukSerializers(produk).data
 
-            user = User.objects.get(id = pesanan['id_pengguna'])
-            userData = UserSerializer(user).data
+            user = Poin.objects.get(id_user = pesanan['id_pengguna'])
+            userData = PoinSerializer(user).data
             
             biaya = produkData['harga'] * pesanan['jumlah']
 
@@ -216,9 +221,8 @@ class ManyPenukaran(
             invoice = {
                 'id_pengguna': pesanan['id_pengguna'],
                 'id_produk': pesanan['id_produk'],
-                'nama': userData['name'],
+                'nama': userData['nama'],
                 'email': userData['email'],
-                'phone': userData['phone'],
                 'kode': str("".join(random.choice(string.ascii_letters + string.digits ) for x in range(12))),
                 'produk': produkData['nama'],
                 'jumlah': pesanan['jumlah'],
@@ -235,14 +239,34 @@ class ManyPenukaran(
                     'message': 'Redeem added to queue',
                 }, status = status.HTTP_201_CREATED)                    
             
+            print(invoiceData.errors)
             return Response({
                 'message': 'Redeem failure',
+                'tes': invoiceData.errors
             }, status = status.HTTP_400_BAD_REQUEST) 
 
         except (InvalidId, ObjectDoesNotExist):
             return Response({
                 'message': 'Not found!',
             }, status = status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+def userPenukaran(req):
+    token = req.COOKIES.get('jwt')
+    
+    
+    if not token:
+        raise AuthenticationFailed('Unauthenticated!')
+    try:
+        payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+    except jwt.ExpiredSignatureError:
+        raise AuthenticationFailed('Unauthenticated!')
+
+    userPenukaran = Penukaran.objects.filter(id_pengguna = payload['id'] )
+    serializer = PenukaranSerializer(userPenukaran, many=True)
+
+    return Response(serializer.data)
+    
     
 @api_view(['GET', 'DELETE'])
 def OnePenukaran(req, kode):
@@ -262,10 +286,13 @@ def OnePenukaran(req, kode):
             produk = Produk.objects.get(pk = ObjectId(penukaranData['id_produk']))
             produkData = ProdukSerializers(produk).data
 
-            user = User.objects.get(id = penukaranData['id_pengguna'])
-            userData = UserSerializer(user).data
+            # user = User.objects.get(_id = penukaranData['id_pengguna'])
+            # userData = UserSerializer(user).data
             
-            if userData['poin'] < penukaranData['biaya']:
+            poinUser = Poin.objects.get(id_user = penukaranData['id_pengguna'])
+            poinUserData = PoinSerializer(poinUser).data
+            
+            if poinUserData['poin'] < penukaranData['biaya']:
                 return Response({
                     'message': f'Point is not enough',
                 }, status = status.HTTP_406_NOT_ACCEPTABLE)
@@ -280,7 +307,7 @@ def OnePenukaran(req, kode):
                 'stok': produkData['stok'] - penukaranData['jumlah'],
                 'penukar': produkData['penukar'] + 1
                 }, partial=True)
-            userUpdate = UserSerializer(user, data={'poin': userData['poin'] - penukaranData['biaya']}, partial=True)
+            userUpdate = PoinSerializer(poinUser, data={'poin': poinUserData['poin'] - penukaranData['biaya']}, partial=True)
 
             if penukaranUpdate.is_valid() and produkUpdate.is_valid() and userUpdate.is_valid():
                 penukaranUpdate.save()

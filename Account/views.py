@@ -6,6 +6,7 @@ from .models import User
 import jwt
 import datetime
 from jwt import decode
+from bson.objectid import ObjectId
 
 class RegisterView(APIView):
     def post(self, request):
@@ -29,7 +30,7 @@ class LoginView(APIView):
             raise AuthenticationFailed('Incorrect password!')
 
         payload = {
-            'id': user.id,
+            'id': str(user._id),
             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
             'iat': datetime.datetime.utcnow()
         }
@@ -49,9 +50,13 @@ class LoginView(APIView):
 
 class UserView(APIView):
     def get(self, request):
-        token = request.COOKIES.get('jwt')
+        token = request.headers.get('jwt')
 
-        if not token:
+        # token = request.headers.get('token', None)
+
+        # print(type(token))
+
+        if not token or token == '':
             raise AuthenticationFailed('Unauthenticated!')
 
         try:
@@ -59,8 +64,9 @@ class UserView(APIView):
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Unauthenticated!')
 
-        user = User.objects.filter(id=payload['id']).first()
+        user = User.objects.filter(_id=ObjectId(payload['id'])).first()
         serializer = UserSerializer(user)
+        
         return Response(serializer.data)
 
 

@@ -86,23 +86,36 @@ WSGI_APPLICATION = 'gabungan.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 # MongoDb
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'djongo',
-#         'CLIENT': {
-#             'name': 'melinda',
-#             'host': 'mongodb://127.0.0.1:27017/melinda'
-#         }
-#     }
-# }
-
-# SQL Lite
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'djongo',
+    #     'CLIENT': {
+    #         'name': 'melinda',
+    #         'host': 'mongodb://127.0.0.1:27017/melinda'
+    #     }
+    # }
+    # 'default': {
+    #     'ENGINE': 'djongo',
+    #     'CLIENT': {
+    #         'name': 'melinda',
+    #         'host': 'mongodb://cobadulu:cobadulu@%2Fhome%2Ffourtour%2Fmongodb-0.sock/melinda?authSource=admin'
+    #     }
+    # }
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'djongo',
+        'NAME': 'melinda',
+        'HOST': 'mongodb+srv://dazveloper:d4z-m0n9O4tL@cluster0.c76glns.mongodb.net/melinda?retryWrites=true&w=majority',
+        'ENFORCE_SCHEMA': False
     }
 }
+
+# SQL Lite
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators

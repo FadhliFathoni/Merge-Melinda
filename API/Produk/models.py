@@ -40,7 +40,6 @@ class Penukaran(models.Model):
     nama = models.CharField(max_length=128)
     kode = models.CharField(max_length=16, default='xxx') # baru
     email = models.CharField(max_length=128)
-    phone = models.CharField(max_length=128)
     produk = models.CharField(max_length=128)
     jumlah = models.IntegerField()
     biaya = models.IntegerField(default=0)

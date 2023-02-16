@@ -15,6 +15,9 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from django.utils.timezone import now
 from calendar import monthrange
+from bson.objectid import ObjectId
+
+import sys
 
 class MinyakPagination(PageNumberPagination):
     page_size = 5
@@ -57,13 +60,15 @@ def addMinyak(request):
         user = User.objects.get(name=request.data["user"])
         try:
             Minyak.objects.create(
-                user=user.name,
-                id_user=user.id,
+                nama=user.name,
+                id_user=user._id,
                 email=user.email,
                 phone=user.phone,
             )
             return Response("Berhasil")
         except:
+            print(sys.exc_info())
+
             return Response("Gagal")
     except:
         return Response("Username tidak tersedia")
@@ -89,12 +94,14 @@ class Setoran(ListAPIView):
 @api_view(["POST"])
 def Verifikasi(request, id):
     data = Minyak.objects.filter(id=id)
-    user_id = Minyak.objects.get(id = id).id_user
-    email = User.objects.get(id = user_id)
+    userData = Minyak.objects.get(id = id)
+    email = User.objects.get(_id = ObjectId(userData.id_user))
+    
     if "volume" in request.data:
         if int(request.data["volume"]) >= 500:
             poin = int(request.data["volume"]) / 500
             volume = int(request.data["volume"])
+
             data.update(
                 volume = volume,
                 poin = poin,
@@ -102,14 +109,15 @@ def Verifikasi(request, id):
             )
             try:
                 Poin.objects.create(
-                id_user = user_id,
+                id_user = userData.id_user,
+                nama = userData.nama,
                 email = email,
                 poin = poin,
                 volume = volume
                 )
             except:
-                poin = int(Poin.objects.get(email = email).poin) + poin
-                volume = int(Poin.objects.get(email = email).volume) + volume
+                poin = int(Poin.objects.get(email = email).poin + poin)
+                volume = int(Poin.objects.get(email = email).volume + volume)
                 updatePoin = Poin.objects.filter(email = email)
                 updatePoin.update(
                     poin = poin,
