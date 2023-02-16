@@ -41,7 +41,7 @@ class AccountManager(BaseUserManager):
 #     poin = models.IntegerField(default=0)
 #     foto = models.TextField(max_length=128)
 class User(AbstractUser, models.Model):
-    _id = models.ObjectIdField()
+    # _id = models.ObjectIdField()
     name = models.TextField(blank=True, max_length=32, unique=True)
     email = models.EmailField(max_length=32, unique=True)
     phone = models.TextField(max_length=16, blank=True)

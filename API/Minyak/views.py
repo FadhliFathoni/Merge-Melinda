@@ -11,6 +11,10 @@ from rest_framework.views import APIView
 import datetime
 from API.Poin.models import Poin
 from API.Poin.serializers import PoinSerializer
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+from django.utils.timezone import now
+from calendar import monthrange
 from bson.objectid import ObjectId
 
 import sys
@@ -25,13 +29,27 @@ class MinyakPagination(PageNumberPagination):
 
 
 class ListMinyak(ListAPIView):
-    queryset = Minyak.objects.filter(status="Terverifikasi")
     serializer_class = MinyakSerializers
     pagination_class = MinyakPagination
     filter_backends = [OrderingFilter, SearchFilter]
     search_fields = ("user", "email")
     ordering = ["-created"]
 
+    def get_queryset(self):
+        now = datetime.now().date()
+        queryset = Minyak.objects.filter(status="Terverifikasi")
+        if "start" in self.request.GET and "end" in self.request.GET:
+                start = self.request.GET["start"]
+                end = self.request.GET["end"]
+                queryset = Minyak.objects.filter(status="Terverifikasi", created__range = [start,end])
+        # if "date" in self.request.GET:
+        #     date = self.request.GET["date"]
+        #     if date == "today":
+        #         print("Today")
+        #         queryset = Minyak.objects.filter(status="Terverifikasi",created__icontains = now)
+        #     elif date == "yesterday":
+        #         queryset = Minyak.objects.filter(status = "Terverifikasi",created__icontains = now-relativedelta(days=1))
+        return queryset
 
 @api_view(["POST"])
 def addMinyak(request):
@@ -96,7 +114,6 @@ def Verifikasi(request, id):
                 )
             except:
                 poin = int(Poin.objects.get(email = email).poin + poin)
-
                 volume = int(Poin.objects.get(email = email).volume + volume)
                 updatePoin = Poin.objects.filter(email = email)
                 updatePoin.update(
