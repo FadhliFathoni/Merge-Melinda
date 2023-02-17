@@ -196,7 +196,7 @@ class ManyPenukaran(
     queryset = Penukaran.objects.all()
     filter_backends = [ DjangoFilterBackend,OrderingFilter, SearchFilter]
     filterset_fields = ['status']
-    search_fields = ['nama', 'kode', 'selesai']
+    search_fields = ['nama', 'kode']
     ordering = ['-created']
 
     def get(self, request):
@@ -297,14 +297,9 @@ def OnePenukaran(req, kode):
 
             produk = Produk.objects.get(pk = ObjectId(penukaranData['id_produk']))
             produkData = ProdukSerializers(produk).data
-
-            # user = User.objects.get(_id = penukaranData['id_pengguna'])
-            # userData = UserSerializer(user).data
             
             poinUser = Poin.objects.get(id_user = penukaranData['id_pengguna'])
-            poinUserData = PoinSerializer(poinUser).data
-
-            
+            poinUserData = PoinSerializer(poinUser).data            
             
             if poinUserData['poin'] < penukaranData['biaya']:
                 return Response({
@@ -328,7 +323,6 @@ def OnePenukaran(req, kode):
                 penukaranUpdate.save()
                 produkUpdate.save()
                 userUpdate.save()
-                print('hello')
                 
                 return Response({
                     'message': f'Redeem verified',
