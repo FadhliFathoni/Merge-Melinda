@@ -33,15 +33,20 @@ class ListMinyak(ListAPIView):
     pagination_class = MinyakPagination
     filter_backends = [OrderingFilter, SearchFilter]
     search_fields = ("user", "email")
-    ordering = ["-created"]
+    ordering = ["-updated"]
 
     def get_queryset(self):
         now = datetime.now().date()
         queryset = Minyak.objects.filter(status="Terverifikasi")
+        
         if "start" in self.request.GET and "end" in self.request.GET:
                 start = self.request.GET["start"]
                 end = self.request.GET["end"]
                 queryset = Minyak.objects.filter(status="Terverifikasi", created__range = [start,end])
+                total = 0
+                for x in queryset:
+                    total = total + x.volume
+                print(total)
         # if "date" in self.request.GET:
         #     date = self.request.GET["date"]
         #     if date == "today":
@@ -59,15 +64,14 @@ def addMinyak(request):
 
         try:
             Minyak.objects.create(
-                nama=user.name,
-                id_user=user._id,
+                user=user.name,
+                id_user=user.id,
                 email=user.email,
                 phone=user.phone,
             )
             return Response("Berhasil")
         except:
             print(sys.exc_info())
-
             return Response("Gagal")
     except:
         return Response("Username tidak tersedia")
@@ -94,7 +98,7 @@ class Setoran(ListAPIView):
 def Verifikasi(request, id):
     data = Minyak.objects.filter(id=id)
     userData = Minyak.objects.get(id = id)
-    email = User.objects.get(_id = ObjectId(userData.id_user))
+    email = User.objects.get(id = userData.id_user)
     
     if "volume" in request.data:
         if int(request.data["volume"]) >= 500:
@@ -105,11 +109,12 @@ def Verifikasi(request, id):
                 volume = volume,
                 poin = poin,
                 status = "Terverifikasi",
+                updated = now()
             )
             try:
                 Poin.objects.create(
-                id_user = userData.id_user,
-                nama = userData.nama,
+                id_user = userData.id,
+                nama = userData.user,
                 email = email,
                 poin = poin,
                 volume = volume

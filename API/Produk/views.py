@@ -52,6 +52,7 @@ class ManyProduk(
         paginator = PageNumberPagination()
         paginator.page_size = 10
 
+         
         for backend in list(self.filter_backends):
             queryset = backend().filter_queryset(self.request, queryset, self)
         
@@ -205,8 +206,18 @@ class ManyPenukaran(
         paginator = PageNumberPagination()
         paginator.page_size = 10
 
+        if "start" in self.request.GET and "end" in self.request.GET:
+            start = self.request.GET["start"]
+            end = self.request.GET["end"]
+            
+            queryset = Penukaran.objects.filter( created__range = [start,end])
+
+            if "status" in self.request.GET and len(queryset) != 0:
+                queryset = Penukaran.objects.filter(status=self.request.GET['status'], created__range = [start,end])
+                
+
         for backend in list(self.filter_backends):
-            queryset = backend().filter_queryset(self.request, queryset, self)
+            queryset = backend().filter_queryset(self.request, queryset, self)           
         
         result_page = paginator.paginate_queryset(queryset, request)
         serializer_class = self.serializer_class(result_page, many=True)
