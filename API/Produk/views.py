@@ -6,7 +6,7 @@ from djongo.database import connect
 
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
-from rest_framework import status, mixins, viewsets
+from rest_framework import status, mixins, viewsets, generics
 from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView, ListAPIView, CreateAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination, InvalidPage
@@ -32,6 +32,8 @@ import datetime
 from operator import itemgetter
 import string
 import random
+
+from helpers.permissions import isUser
 
 # PRODUK  
 class ManyProduk(
@@ -178,15 +180,6 @@ class OneKategori(
         except (InvalidId, ObjectDoesNotExist) :
             return Response({'message': 'Not found!','result': False}, status = status.HTTP_404_NOT_FOUND)     
         
-@api_view(['GET'])
-def tesPenukaran(req):
-    data = Penukaran.objects.filter(selesai=False)
-    print(data)
-    serializer = PenukaranSerializer(data)
-
-    return Response(serializer.data)
-    
-    
 # PENUKARAN 
 class ManyPenukaran(
     mixins.ListModelMixin,
@@ -262,7 +255,6 @@ class ManyPenukaran(
                     'message': 'Redeem added to queue',
                 }, status = status.HTTP_201_CREATED)                    
             
-            print(invoiceData.errors)
             return Response({
                 'message': 'Redeem failure',
                 'tes': invoiceData.errors
@@ -272,23 +264,27 @@ class ManyPenukaran(
             return Response({
                 'message': 'Not found!',
             }, status = status.HTTP_404_NOT_FOUND)
-    
-@api_view(['GET'])
-def userPenukaran(req):
-    token = request.data.get('jwt')    
-    
-    if not token or token == '':
-        raise AuthenticationFailed('Unauthenticated!')
-    try:
-        payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-    except jwt.ExpiredSignatureError:
-        raise AuthenticationFailed('Unauthenticated!')
 
-    userPenukaran = Penukaran.objects.filter(id_pengguna = payload['id'] )
-    serializer = PenukaranSerializer(userPenukaran, many=True)
+class userPenukaran(
+    mixins.ListModelMixin,
+    GenericAPIView
+):
+    queryset = Penukaran.objects.all()
+    serializer_class = PenukaranSerializer
+    permission_classes = [isUser]
 
-    return Response(serializer.data)
-    
+    def get(self, request):
+
+        queryset = Penukaran.objects.filter(id_pengguna = request.account['id'] )
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 20
+        
+        
+        result = paginator.paginate_queryset( queryset, request)
+        serializer = self.serializer_class(result, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
     
 @api_view(['GET', 'DELETE'])
 def OnePenukaran(req, kode):

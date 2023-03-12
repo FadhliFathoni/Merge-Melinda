@@ -11,6 +11,8 @@ from bson.objectid import ObjectId
 
 import sys
 
+from helpers.permissions import isUser
+
 class RegisterView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -38,13 +40,14 @@ class LoginView(APIView):
             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
             'iat': datetime.datetime.utcnow()
         }
+        
 
         token = jwt.encode(payload, 'secret',
                            algorithm='HS256').decode('utf-8')
 
         response = Response()
 
-        # response.set_cookie(key='jwt', value=token, httponly=True)
+        response.set_cookie(key='jwt', value=token, httponly=True)
         response.data = {
             'jwt': token
         }
@@ -53,21 +56,12 @@ class LoginView(APIView):
 
 
 class UserView(APIView):
-    def post(self, request):
-        token = request.data.get('jwt')
+    
+    permission_classes = [isUser]
 
-        if not token or token == '':
-            raise AuthenticationFailed('Unauthenticated!')
-
-        try:
-            payload = jwt.decode(token, 'secret', algorithm=['HS256'])
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Unauthenticated!')
-
-        user = User.objects.filter(id=payload['id']).first()
+    def get(self, request):
+        user = User.objects.filter(_id=ObjectId(request.account['id'])).first()
         serializer = UserSerializer(user)
-
-        
         
         return Response(serializer.data)
 

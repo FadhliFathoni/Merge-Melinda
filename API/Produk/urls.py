@@ -13,7 +13,6 @@ urlpatterns = [
 
     # PENUKARAN 
     path('penukaran', views.ManyPenukaran.as_view()),
-    path("penukaran/unverified", views.tesPenukaran, name=""),
-    path('penukaran/user', views.userPenukaran),
+    path('penukaran/user', views.userPenukaran.as_view()),
     path('penukaran/<str:kode>', views.OnePenukaran),
 ]

@@ -25,6 +25,8 @@ from operator import itemgetter
 import string
 import random
 
+from helpers.permissions import isAdmin
+
 # MESIN
 class ManyMesin(
     mixins.ListModelMixin,
@@ -36,6 +38,7 @@ class ManyMesin(
     filter_backends = [OrderingFilter, SearchFilter]
     search_fields = ['nama']
     ordering_fields = ['created']
+    permission_classes = [isAdmin]
 
     def get(self, request):
         queryset = self.get_queryset()
