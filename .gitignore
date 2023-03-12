@@ -1,5 +1,3 @@
 __pycache__/
 static/
-passenger_wsgi.py
-.htaccess
 settings.py
