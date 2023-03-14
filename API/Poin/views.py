@@ -10,25 +10,20 @@ from Account.serializers import UserSerializer
 from Account.models import User
 from rest_framework.exceptions import AuthenticationFailed
 
+from helpers.permissions import has_access
+
 class ListPoin(ListAPIView):
     serializer_class = PoinSerializer
     queryset = Poin.objects.all()
     filter_backends = [OrderingFilter,SearchFilter]
     search_fields = ("email")
 
-@api_view(["POST"])
+@api_view(["GET"])
 def getPoin(request):
-    token = request.data.get('jwt')
+    if not has_access(request, '*'): raise AuthenticationFailed('Unauthenticated: you are not allowed')
 
-    if not token or token == '':
-        raise AuthenticationFailed('Unauthenticated!')
-    try:
-        payload = jwt.decode(token, 'secret', algorithm=['HS256'])
-    except jwt.ExpiredSignatureError:
-        raise AuthenticationFailed('Unauthenticated!')
-
-    user_id = User.objects.get(_id=ObjectId(payload['id']))._id
+    # user_id = User.objects.get(_id=ObjectId(request.account['id']))._id
     
-    poin = Poin.objects.filter(id_user = str(user_id)).first()
+    poin = Poin.objects.filter(id_user = str(request.account['id'])).first()
     serializer = PoinSerializer(poin)
     return Response(serializer.data)

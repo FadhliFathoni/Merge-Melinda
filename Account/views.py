@@ -11,7 +11,7 @@ from bson.objectid import ObjectId
 
 import sys
 
-from helpers.permissions import isUser
+from helpers.permissions import has_access
 
 class RegisterView(APIView):
     def post(self, request):
@@ -36,7 +36,10 @@ class LoginView(APIView):
 
         payload = {
             'id': str(user._id),
-            'admin': user.is_superAdmin,
+            'is_superAdmin': user.is_superAdmin,
+            'is_staff': user.is_staff,
+            'is_user': user.is_user,
+            'is_adminDesa': user.is_adminDesa, 
             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
             'iat': datetime.datetime.utcnow()
         }
@@ -57,9 +60,9 @@ class LoginView(APIView):
 
 class UserView(APIView):
     
-    permission_classes = [isUser]
-
     def get(self, request):
+        if not has_access(request, "*"): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+        
         user = User.objects.filter(_id=ObjectId(request.account['id'])).first()
         serializer = UserSerializer(user)
         

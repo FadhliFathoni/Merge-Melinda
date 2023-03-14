@@ -25,7 +25,8 @@ from operator import itemgetter
 import string
 import random
 
-from helpers.permissions import isAdmin
+from helpers.permissions import has_access
+
 
 # MESIN
 class ManyMesin(
@@ -38,9 +39,10 @@ class ManyMesin(
     filter_backends = [OrderingFilter, SearchFilter]
     search_fields = ['nama']
     ordering_fields = ['created']
-    permission_classes = [isAdmin]
 
     def get(self, request):
+        if not has_access(request, ["is_superAdmin"]): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+        
         queryset = self.get_queryset()
         
         paginator = PageNumberPagination()
@@ -55,6 +57,8 @@ class ManyMesin(
         return paginator.get_paginated_response(serializer_class.data)
 
     def post(self, request):
+        if not has_access(request, ["is_superAdmin"]): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+        
         self.create(request)
         
         return Response({
@@ -80,6 +84,8 @@ class OneMesin(
             return Response({'message': 'Not found!','result': False}, status = status.HTTP_404_NOT_FOUND)     
 
     def put(self, request, *args, **kwargs):
+        if not has_access(request, ["is_superAdmin"]): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+        
         try: 
             self.kwargs['pk'] = ObjectId(self.kwargs['pk'])
             return self.partial_update(request, *args, **kwargs)
@@ -88,6 +94,8 @@ class OneMesin(
             return Response({'message': 'Not found!','result': False}, status = status.HTTP_404_NOT_FOUND)     
 
     def delete(self, request, *args, **kwargs):
+        if not has_access(request, ["is_superAdmin"]): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+        
         try: 
             self.kwargs['pk'] = ObjectId(self.kwargs['pk'])
             self.destroy(request, *args, **kwargs)
@@ -103,6 +111,8 @@ class OneMesin(
 @api_view(['PUT'])
 def scanMesin(req):
     try:
+        if not has_access(request, ["is_user"]): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+        
         # ambil data satu mesin 
         body = JSONParser().parse(req)
 

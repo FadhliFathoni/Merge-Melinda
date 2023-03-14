@@ -1,6 +1,6 @@
 from djongo import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager, AbstractBaseUser
-
+from django.core.validators import FileExtensionValidator
 
 class AccountManager(BaseUserManager):
     use_in_migrations = True
@@ -40,6 +40,9 @@ class AccountManager(BaseUserManager):
 #     alamat = models.TextField(max_length=128)
 #     poin = models.IntegerField(default=0)
 #     foto = models.TextField(max_length=128)
+def uploadTo(instance, filename):
+    return 'images/{filename}'.format(filename=filename)
+
 class User(AbstractUser, models.Model):
     _id = models.ObjectIdField()
     name = models.TextField(blank=True, max_length=32, unique=True)
@@ -47,8 +50,8 @@ class User(AbstractUser, models.Model):
     phone = models.TextField(max_length=16, blank=True)
     alamat = models.TextField(max_length=128, blank=True)
     # poin = models.IntegerField(default=0)
-    foto = models.TextField(max_length=128, blank=True)
-
+    foto = models.ImageField(upload_to = uploadTo, blank=True, null=True,validators=[FileExtensionValidator(allowed_extensions=["png", "jpg", "jpeg"])] )
+    
     createdAt = models.DateTimeField(
         verbose_name='date joined', auto_now_add=True)
     updateAt = models.DateTimeField(

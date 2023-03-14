@@ -19,6 +19,8 @@ from bson.objectid import ObjectId
 
 import sys
 
+from helpers.permissions import has_access
+
 class MinyakPagination(PageNumberPagination):
     page_size = 5
 
@@ -35,7 +37,9 @@ class ListMinyak(ListAPIView):
     search_fields = ("user", "email")
     ordering = ["-updated"]
 
-    def get_queryset(self):
+    def get_queryset(self, request):
+        if not has_access(request, ["is_superAdmin", 'is_adminDesa']): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+        
         now = datetime.now().date()
         queryset = Minyak.objects.filter(status="Terverifikasi")
         

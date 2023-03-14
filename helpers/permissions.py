@@ -1,48 +1,30 @@
 from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import AuthenticationFailed
+from functools import wraps
 import jwt
 
-class isAdmin(BasePermission):
-
-   def has_permission(self, request, view):
-        token = request.COOKIES.get('jwt')    
+def has_access(request, roles):
+    token = request.COOKIES.get('jwt') or request.headers.get('jwt') 
     
-        if not token or token == '':
-            raise AuthenticationFailed('Unauthenticated!')
-            return False
-        try:
-            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-
-            if payload['admin'] is False:
-                raise AuthenticationFailed('Unauthenticated: Admin Only')
+    if not token or token == '':
+        raise AuthenticationFailed('Unauthenticated: you need to login')
+        return False
+    try:
+        payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+       
+        if roles != "*" :       
+            payloadRoles = []        
+            
+            for key in payload:
+                if payload[key] == True: payloadRoles.append(key)
+                    
+            if len(list(set(payloadRoles) & set(roles))) == 0:
+                raise AuthenticationFailed('Unauthenticated: you are not allowed')
                 return False
-            
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Unauthenticated!')
-            return False
-            
-        request.account = payload
-        return True
-    
-class isUser(BasePermission):
-
-   def has_permission(self, request, view):
-        token = request.COOKIES.get('jwt')    
-    
-        if not token or token == '':
-            raise AuthenticationFailed('Unauthenticated!')
-            return False
-        try:
-            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-
-            if payload['admin'] is True:
-                raise AuthenticationFailed('Unauthenticated: User Only')
-                return False
-            
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Unauthenticated!')
-            return False
-            
         
-        request.account = payload
-        return True
+    except (jwt.ExpiredSignatureError, KeyError):
+        raise AuthenticationFailed('Unauthenticated: you need to login')
+        return False
+        
+    request.account = payload
+    return True

@@ -5,8 +5,12 @@ from rest_framework.decorators import api_view
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
+from helpers.permissions import has_access
+
 @api_view(["GET"])
 def dashboard(request):
+    if not has_access(request, ["is_superAdmin", 'is_adminDesa']): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+
     now = datetime.now().date()
     minyak = Minyak.objects.filter(status = "Terverifikasi",updated__icontains = now)
     user = User.objects.filter(createdAt__icontains = now)

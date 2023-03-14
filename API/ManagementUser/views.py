@@ -14,6 +14,7 @@ from API.Poin.models import Poin
 from API.Poin.serializers import PoinSerializer
 from rest_framework.mixins import DestroyModelMixin
 
+from helpers.permissions import has_access
 
 class UserPagination(PageNumberPagination):
     page_size = 5
@@ -31,9 +32,14 @@ class ListUser(ListAPIView):
     search_fields = ("name", "email")
     pagination_class = UserPagination
     ordering = ["-createdAt"]
+    
+    def list(self, request):
+        if not has_access(request, ["is_superAdmin"]): raise AuthenticationFailed('Unauthenticated: you are not allowed')
 
 @api_view(["DELETE"])
 def deleteUser(request,pk):
+    if not has_access(request, ["is_superAdmin"]): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+
     try:
         User.objects.filter(id = pk).delete()
         Minyak.objects.filter(id_user = pk).delete()

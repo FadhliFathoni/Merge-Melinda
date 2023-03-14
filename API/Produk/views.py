@@ -3,15 +3,17 @@ from django.http.response import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 
 from djongo.database import connect
+from django.contrib.auth.mixins import PermissionRequiredMixin
 
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework import status, mixins, viewsets, generics
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.generics import GenericAPIView, ListAPIView, CreateAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination, InvalidPage
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.exceptions import AuthenticationFailed
+
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -33,13 +35,13 @@ from operator import itemgetter
 import string
 import random
 
-from helpers.permissions import isUser
+from helpers.permissions import has_access
 
 # PRODUK  
 class ManyProduk(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
-    GenericAPIView
+    GenericAPIView,
 ):
     serializer_class = ProdukSerializers
     queryset = Produk.objects.all()
@@ -47,13 +49,12 @@ class ManyProduk(
     search_fields = ['nama', 'keterangan', 'kategori']
     parser_classes = [MultiPartParser]
     ordering = ['-created']
-
-    def get(self, request):
-        queryset = self.get_queryset()
+    
+    def get(self, request, *args, **kwargs):
         
+        queryset = self.get_queryset()
         paginator = PageNumberPagination()
         paginator.page_size = 10
-
          
         for backend in list(self.filter_backends):
             queryset = backend().filter_queryset(self.request, queryset, self)
@@ -64,6 +65,8 @@ class ManyProduk(
         return paginator.get_paginated_response(serializer_class.data)
 
     def post(self, request):
+        if not has_access(request, ['is_superAdmin', 'is_adminDesa']): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+
         self.create(request)
         
         return Response({
@@ -89,6 +92,8 @@ class OneProduk(
             return Response({'message': 'Not found!','result': False}, status = status.HTTP_404_NOT_FOUND)     
 
     def put(self, request, *args, **kwargs):
+        if not has_access(request, ['is_superAdmin', 'is_adminDesa']): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+
         try: 
             self.kwargs['pk'] = ObjectId(self.kwargs['pk'])
             return self.partial_update(request, *args, **kwargs)
@@ -97,6 +102,8 @@ class OneProduk(
             return Response({'message': 'Not found!','result': False}, status = status.HTTP_404_NOT_FOUND)     
 
     def delete(self, request, *args, **kwargs):
+        if not has_access(request, ['is_superAdmin', 'is_adminDesa']): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+
         try: 
             self.kwargs['pk'] = ObjectId(self.kwargs['pk'])
             self.destroy(request, *args, **kwargs)
@@ -121,6 +128,7 @@ class ManyKategori(
     search_fields = ['nama']
     ordering = ['-created']
 
+    
     def get(self, request):
         queryset = self.get_queryset()
         
@@ -136,6 +144,8 @@ class ManyKategori(
         return paginator.get_paginated_response(serializer_class.data)
 
     def post(self, request):
+        if not has_access(request, ['is_superAdmin', 'is_adminDesa']): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+ 
         self.create(request)
         
         return Response({
@@ -161,6 +171,8 @@ class OneKategori(
             return Response({'message': 'Not found!','result': False}, status = status.HTTP_404_NOT_FOUND)     
 
     def put(self, request, *args, **kwargs):
+        if not has_access(request, ['is_superAdmin', 'is_adminDesa']): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+ 
         try: 
             self.kwargs['pk'] = ObjectId(self.kwargs['pk'])
             return self.partial_update(request, *args, **kwargs)
@@ -169,6 +181,8 @@ class OneKategori(
             return Response({'message': 'Not found!','result': False}, status = status.HTTP_404_NOT_FOUND)     
 
     def delete(self, request, *args, **kwargs):
+        if not has_access(request, ['is_superAdmin', 'is_adminDesa']): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+ 
         try: 
             self.kwargs['pk'] = ObjectId(self.kwargs['pk'])
             self.destroy(request, *args, **kwargs)
@@ -193,7 +207,7 @@ class ManyPenukaran(
     search_fields = ['nama', 'kode']
     ordering = ['-created']
 
-    def get(self, request):
+    def get(self, request):        
         queryset = self.get_queryset()
         
         paginator = PageNumberPagination()
@@ -218,6 +232,8 @@ class ManyPenukaran(
         return paginator.get_paginated_response(serializer_class.data)
 
     def post(self, request):
+        if not has_access(request, ['is_user']): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+
         try:
             pesanan = JSONParser().parse(request)
 
@@ -271,9 +287,9 @@ class userPenukaran(
 ):
     queryset = Penukaran.objects.all()
     serializer_class = PenukaranSerializer
-    permission_classes = [isUser]
 
     def get(self, request):
+        if not has_access(request, ['is_user']): raise AuthenticationFailed('Unauthenticated: you are not allowed')
 
         queryset = Penukaran.objects.filter(id_pengguna = request.account['id'] )
 
@@ -293,6 +309,8 @@ def OnePenukaran(req, kode):
         penukaranData = PenukaranSerializer(penukaran).data
         
         if req.method == 'DELETE':
+            if not has_access(req, ['is_superAdmin', 'is_adminDesa']): raise AuthenticationFailed('Unauthenticated: you are not allowed')
+            
             penukaran.delete()
 
             return Response({
@@ -300,7 +318,7 @@ def OnePenukaran(req, kode):
             }, status = status.HTTP_204_NO_CONTENT)
 
         elif req.method == 'GET':
-            
+            if not has_access(req, ['is_superAdmin', 'is_adminDesa']): raise AuthenticationFailed('Unauthenticated: you are not allowed')
 
             produk = Produk.objects.get(pk = ObjectId(penukaranData['id_produk']))
             produkData = ProdukSerializers(produk).data
